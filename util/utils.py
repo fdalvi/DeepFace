@@ -88,7 +88,7 @@ def download_images(filename, path1, path2, debug=False):
 		im_cropped.save(crop_path) 
 		
 		#break
-		if i == 5: break
+		# if i == 5: break
 
 
 
