@@ -18,5 +18,10 @@ def preprocessing():
 	download_images(dev_url_path, dev_images_patho, dev_images_pathc, True)
 	download_images(eval_url_path, eval_images_patho, eval_images_pathc, True)
 
+def load_attributes():
+	att_path = os.path.abspath('../data/pubfig_attributes.txt')
+	get_attributes(att_path, ['Aaron_Eckhart_1', 'Abhishek_Bachan_2'])
+
 if __name__ == '__main__':
-	preprocessing()
+	load_attributes()
+	# preprocessing()
