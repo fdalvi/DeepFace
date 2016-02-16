@@ -5,7 +5,7 @@ from utils import *
 
 def preprocessing(): 
 	##downloading images
-	dev_url_path, eval_url_path = os.path.abspath('../data/dev_set/dev_urls.txt'), os.path.abspath('../data/eval_set/eval_urls.txt')
+	dev_url_path, eval_url_path = os.path.abspath('../data/dev_set/dev_urls2.txt'), os.path.abspath('../data/eval_set/eval_urls.txt')
 	dev_images_patho, eval_images_patho = os.path.abspath('../data/dev_set/dev_images_orig'), os.path.abspath('../data/eval_set/eval_images_orig')
 	dev_images_pathc, eval_images_pathc = os.path.abspath('../data/dev_set/dev_images_crop'), os.path.abspath('../data/eval_set/eval_images_crop')
 
