@@ -7,3 +7,6 @@
 # Processed Images
 data/dev_set/dev_images_crop/
 data/dev_set/dev_images_orig/
+
+# Virtual Env
+.env
