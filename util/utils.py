@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 
 from PIL import Image
+from socket import error as SocketError
 
 URL_POSITION = 3
 
@@ -34,7 +35,12 @@ def request_wrapper(im_info, opener):
 	except urllib2.URLError, e:
 		print "image url really sucked: " + im_info[0] + '_' + im_info[1] + '_' + im_info[2]
 		result = None
-
+	except SocketError, e:
+		print "socket error"
+		result = None
+	except httplib.BadStatusLine, e:
+		print "bad status line"
+		result = None
 	return result
 
 
@@ -62,15 +68,6 @@ def download_images(filename, path1, path2, debug=False):
 
 		result = request_wrapper(im_info, opener)
 		if result == None: continue
-		# try: 
-		# 	request = urllib2.Request(im_info[URL_POSITION])
-		# 	result = opener.open(request)
-		# except urllib2.HTTPError, e:
-		# 	print "image url sucked: " + im_info[0] + '_' + im_info[1] + '_' + im_info[2]
-		# 	continue
-		# except urllib2.URLError, e:
-		# 	print "image url really sucked: " + im_info[0] + '_' + im_info[1] + '_' + im_info[2]
-		# 	continue
 
 		if debug: 
 			print "im:", im_info
@@ -78,16 +75,9 @@ def download_images(filename, path1, path2, debug=False):
 		coords = tuple([int(x) for x in im_info[4].split(',')])
 		im = open_wrapper(result)
 		if im == None: continue
-		# try: 
-		# 	im = Image.open(result)
-		# except IOError, e: 
-		# 	print "bad image"
-		# 	continue
+
 		orig_path = os.path.join(path1, im_info[0] + '_' + im_info[1] + '_' + im_info[2] + '.jpg')
 		crop_path = os.path.join(path2, im_info[0] + '_' + im_info[1] + '_' + im_info[2] + '_cropped.jpg')
-		im.save(orig_path)
+		im.convert('RGB').save(orig_path)
 		im_cropped = im.crop(coords)
-		im_cropped.save(crop_path) 
-		
-		#break
-		# if i == 5: break
+		im_cropped.convert('RGB').save(crop_path) 
