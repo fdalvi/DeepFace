@@ -10,3 +10,19 @@ data/dev_set/dev_images_orig/
 
 # Virtual Env
 .env
+
+# Processed data
+data/dev_set.tar.gz
+data/dev_set/images/
+data/dev_set/images_cropped/
+data/eval_set.tar.gz
+data/eval_set/images/
+data/eval_set/images_cropped/
+
+# Analysis
+src/analysis/feature_maps/
+src/analysis/outs_fc7/
+
+# Caffe models
+src/vgg_face_caffe/
+src/vgg_face_torch/
