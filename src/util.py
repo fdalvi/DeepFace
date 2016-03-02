@@ -61,6 +61,7 @@ def get_image_names(path, remove_extension=True):
 	filenames = os.listdir(path)
 	if remove_extension:
 		filenames = [f.split('.')[0] for f in filenames]
+	filenames = [f for f in filenames if len(f) != 0]
 	return filenames
 
 
@@ -72,34 +73,30 @@ Args:
 Returns:
 	consolidated_labels: consolidated labels matrix
 '''
-def consolidate_labels(original_labels): 
+def consolidate_labels(original_labels, image_names = None, debug=False): 
 	original_labels = original_labels.as_matrix()
-	print type(original_labels)
-	consolidated_matrix = np.zeros((original_labels.shape[0], len(CONSOLIDATED_LABELS)))
+	consolidated_matrix = np.zeros((original_labels.shape[0], len(CONSOLIDATED_LABELS)), dtype=np.int)
 
-	for label_idx, label_list in enumerate(CONSOLIDATED_LABELS): 
-		cols = original_labels[:,label_list]
-		for i in xrange(cols.shape[0]): 
+	for i in xrange(original_labels.shape[0]): 
+		if image_names is not None:
+			if debug: print 'Image ',image_names[i]
+		else:
+			if debug: print 'Image #', i
+		for label_idx, label_list in enumerate(CONSOLIDATED_LABELS): 
+			cols = original_labels[:,label_list]
+
 			if np.sum(cols[i,:]) == 0: 
 				consolidated_matrix[i,label_idx] = 0
+				if debug: print '\tNot ', ",".join([LABELS[l] for l in label_list])
 			else: 
 				idxs = []
 				for idx in xrange(len(label_list)): 
 					if cols[i,idx] == 1: 
 						idxs.append(idx+1)
 				consolidated_matrix[i,label_idx] = random.choice(idxs)
+				if debug: print '\t', LABELS[label_list[consolidated_matrix[i,label_idx]-1]]
 
-	print original_labels[3,:]
-	print consolidated_matrix[3,:]
-	for i in xrange(original_labels.shape[1]): 
-		if original_labels[3,i] == 0: 
-			print "not " + LABELS[i]
-		else: 
-			print LABELS[i]
-
-	for i in xrange(consolidated_matrix.shape[1]): 
-		print "column: %d, consolidated label: %d" % (i, consolidated_matrix[3,i])
-	return None
+	return consolidated_matrix
 
 
 def test():
@@ -111,8 +108,9 @@ def test():
 
 	pic_list = get_image_names('../data/dev_set/images_cropped/')
 	atts = get_attributes('../data/pubfig_attributes.txt', pic_list)
-	print pic_list[3]
-	print consolidate_labels(atts)
+	consolidated_atts = consolidate_labels(atts, pic_list)
+	print consolidated_atts
+	print consolidated_atts.shape
 
 if __name__ == '__main__':
 	test()
