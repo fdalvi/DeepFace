@@ -103,11 +103,16 @@ def consolidate_labels(original_labels):
 
 
 def test():
+	##### GET_IMAGE_NAMES test #####
+	print get_image_names('../data/dev_set/images_cropped/')
+
+	##### get_attributes test #####
+	print get_attributes('../data/pubfig_attributes.txt', ['Aaron_Eckhart_1', 'Aaron_Eckhart_4'])
+
 	pic_list = get_image_names('../data/dev_set/images_cropped/')
 	atts = get_attributes('../data/pubfig_attributes.txt', pic_list)
 	print pic_list[3]
 	print consolidate_labels(atts)
-
 
 if __name__ == '__main__':
 	test()
