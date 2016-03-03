@@ -1,0 +1,1351 @@
+# DeepFace Network
+name: "DeepFace_layers"
+input: "data"
+input_dim: 1
+input_dim: 3
+input_dim: 224
+input_dim: 224
+force_backward: true
+layer {
+  bottom: "data"
+  top: "conv1_1"
+  name: "conv1_1"
+  type: "Convolution"
+  convolution_param {
+    num_output: 64
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv1_1"
+  top: "conv1_1"
+  name: "relu1_1"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv1_1"
+  top: "conv1_2"
+  name: "conv1_2"
+  type: "Convolution"
+  convolution_param {
+    num_output: 64
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv1_2"
+  top: "conv1_2"
+  name: "relu1_2"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv1_2"
+  top: "pool1"
+  name: "pool1"
+  type: "Pooling"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    stride: 2
+  }
+}
+layer {
+  bottom: "pool1"
+  top: "conv2_1"
+  name: "conv2_1"
+  type: "Convolution"
+  convolution_param {
+    num_output: 128
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv2_1"
+  top: "conv2_1"
+  name: "relu2_1"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv2_1"
+  top: "conv2_2"
+  name: "conv2_2"
+  type: "Convolution"
+  convolution_param {
+    num_output: 128
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv2_2"
+  top: "conv2_2"
+  name: "relu2_2"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv2_2"
+  top: "pool2"
+  name: "pool2"
+  type: "Pooling"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    stride: 2
+  }
+}
+layer {
+  bottom: "pool2"
+  top: "conv3_1"
+  name: "conv3_1"
+  type: "Convolution"
+  convolution_param {
+    num_output: 256
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv3_1"
+  top: "conv3_1"
+  name: "relu3_1"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv3_1"
+  top: "conv3_2"
+  name: "conv3_2"
+  type: "Convolution"
+  convolution_param {
+    num_output: 256
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv3_2"
+  top: "conv3_2"
+  name: "relu3_2"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv3_2"
+  top: "conv3_3"
+  name: "conv3_3"
+  type: "Convolution"
+  convolution_param {
+    num_output: 256
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv3_3"
+  top: "conv3_3"
+  name: "relu3_3"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv3_3"
+  top: "pool3"
+  name: "pool3"
+  type: "Pooling"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    stride: 2
+  }
+}
+layer {
+  bottom: "pool3"
+  top: "conv4_1"
+  name: "conv4_1"
+  type: "Convolution"
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv4_1"
+  top: "conv4_1"
+  name: "relu4_1"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv4_1"
+  top: "conv4_2"
+  name: "conv4_2"
+  type: "Convolution"
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv4_2"
+  top: "conv4_2"
+  name: "relu4_2"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv4_2"
+  top: "conv4_3"
+  name: "conv4_3"
+  type: "Convolution"
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv4_3"
+  top: "conv4_3"
+  name: "relu4_3"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv4_3"
+  top: "pool4"
+  name: "pool4"
+  type: "Pooling"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    stride: 2
+  }
+}
+layer {
+  bottom: "pool4"
+  top: "conv5_1"
+  name: "conv5_1"
+  type: "Convolution"
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv5_1"
+  top: "conv5_1"
+  name: "relu5_1"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv5_1"
+  top: "conv5_2"
+  name: "conv5_2"
+  type: "Convolution"
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv5_2"
+  top: "conv5_2"
+  name: "relu5_2"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv5_2"
+  top: "conv5_3"
+  name: "conv5_3"
+  type: "Convolution"
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv5_3"
+  top: "conv5_3"
+  name: "relu5_3"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv5_3"
+  top: "pool5"
+  name: "pool5"
+  type: "Pooling"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    stride: 2
+  }
+}
+layer {
+  bottom: "pool5"
+  top: "fc6"
+  name: "fc6"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 4096
+  }
+}
+layer {
+  bottom: "fc6"
+  top: "fc6"
+  name: "relu6"
+  type: "ReLU"
+}
+layer {
+  bottom: "fc6"
+  top: "fc6"
+  name: "drop6"
+  type: "Dropout"
+  dropout_param {
+    dropout_ratio: 0.5
+  }
+}
+layer {
+  bottom: "fc6"
+  top: "fc7"
+  name: "fc7"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 4096
+  }
+}
+layer {
+  bottom: "fc7"
+  top: "fc7"
+  name: "relu7"
+  type: "ReLU"
+}
+layer {
+  bottom: "fc7"
+  top: "fc7"
+  name: "drop7"
+  type: "Dropout"
+  dropout_param {
+    dropout_ratio: 0.5
+  }
+}
+
+# Old head
+# layer {
+#   bottom: "fc7"
+#   top: "fc8"
+#   name: "fc8"
+#   type: "InnerProduct"
+#   inner_product_param {
+#     num_output: 2622
+#   }
+# }
+# layer {
+#   bottom: "fc8"
+#   top: "prob"
+#   name: "prob"
+#   type: "Softmax"
+# }
+# layer {
+#   name: "argmax"
+#   type: "ArgMax"
+#   bottom: "prob"
+#   top: "argmax"
+# }
+
+# Head 1
+# layer {
+#   bottom: "fc7"
+#   top: "fc8-1"
+#   name: "fc8-1"
+#   type: "InnerProduct"
+#   inner_product_param {
+#     num_output: 2
+#     weight_filler {
+#       type: "xavier"
+#     }
+#     bias_filler {
+#       type: "constant"
+#     }
+#   }
+# }
+# layer {
+#   bottom: "fc8-1"
+#   top: "loss-1"
+#   name: "loss-1"
+#   type: "Softmax"
+# }
+# layer {
+#   name: "argmax-1"
+#   type: "ArgMax"
+#   bottom: "prob-1"
+#   top: "argmax-1"
+# }
+
+
+# Head 1
+layer {
+  bottom: "fc7"
+  top: "fc8-1"
+  name: "fc8-1"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-1"
+  top: "loss-1"
+  name: "loss-1"
+  type: "Softmax"
+}
+
+# Head 2
+layer {
+  bottom: "fc7"
+  top: "fc8-2"
+  name: "fc8-2"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 5
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-2"
+  top: "loss-2"
+  name: "loss-2"
+  type: "Softmax"
+}
+
+# Head 3
+layer {
+  bottom: "fc7"
+  top: "fc8-3"
+  name: "fc8-3"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 6
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-3"
+  top: "loss-3"
+  name: "loss-3"
+  type: "Softmax"
+}
+
+# Head 4
+layer {
+  bottom: "fc7"
+  top: "fc8-4"
+  name: "fc8-4"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 5
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-4"
+  top: "loss-4"
+  name: "loss-4"
+  type: "Softmax"
+}
+
+# Head 5
+layer {
+  bottom: "fc7"
+  top: "fc8-5"
+  name: "fc8-5"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 3
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-5"
+  top: "loss-5"
+  name: "loss-5"
+  type: "Softmax"
+}
+
+# Head 6
+layer {
+  bottom: "fc7"
+  top: "fc8-6"
+  name: "fc8-6"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 4
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-6"
+  top: "loss-6"
+  name: "loss-6"
+  type: "Softmax"
+}
+
+# Head 7
+layer {
+  bottom: "fc7"
+  top: "fc8-7"
+  name: "fc8-7"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-7"
+  top: "loss-7"
+  name: "loss-7"
+  type: "Softmax"
+}
+
+# Head 8
+layer {
+  bottom: "fc7"
+  top: "fc8-8"
+  name: "fc8-8"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 3
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-8"
+  top: "loss-8"
+  name: "loss-8"
+  type: "Softmax"
+}
+
+# Head 9
+layer {
+  bottom: "fc7"
+  top: "fc8-9"
+  name: "fc8-9"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-9"
+  top: "loss-9"
+  name: "loss-9"
+  type: "Softmax"
+}
+
+# Head 10
+layer {
+  bottom: "fc7"
+  top: "fc8-10"
+  name: "fc8-10"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-10"
+  top: "loss-10"
+  name: "loss-10"
+  type: "Softmax"
+}
+
+# Head 11
+layer {
+  bottom: "fc7"
+  top: "fc8-11"
+  name: "fc8-11"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 4
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-11"
+  top: "loss-11"
+  name: "loss-11"
+  type: "Softmax"
+}
+
+# Head 12
+layer {
+  bottom: "fc7"
+  top: "fc8-12"
+  name: "fc8-12"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-12"
+  top: "loss-12"
+  name: "loss-12"
+  type: "Softmax"
+}
+
+# Head 13
+layer {
+  bottom: "fc7"
+  top: "fc8-13"
+  name: "fc8-13"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 4
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-13"
+  top: "loss-13"
+  name: "loss-13"
+  type: "Softmax"
+}
+
+# Head 14
+layer {
+  bottom: "fc7"
+  top: "fc8-14"
+  name: "fc8-14"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-14"
+  top: "loss-14"
+  name: "loss-14"
+  type: "Softmax"
+}
+
+# Head 15
+layer {
+  bottom: "fc7"
+  top: "fc8-15"
+  name: "fc8-15"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-15"
+  top: "loss-15"
+  name: "loss-15"
+  type: "Softmax"
+}
+
+# Head 16
+layer {
+  bottom: "fc7"
+  top: "fc8-16"
+  name: "fc8-16"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 4
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-16"
+  top: "loss-16"
+  name: "loss-16"
+  type: "Softmax"
+}
+
+# Head 17
+layer {
+  bottom: "fc7"
+  top: "fc8-17"
+  name: "fc8-17"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 3
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-17"
+  top: "loss-17"
+  name: "loss-17"
+  type: "Softmax"
+}
+
+# Head 18
+layer {
+  bottom: "fc7"
+  top: "fc8-18"
+  name: "fc8-18"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 3
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-18"
+  top: "loss-18"
+  name: "loss-18"
+  type: "Softmax"
+}
+
+# Head 19
+layer {
+  bottom: "fc7"
+  top: "fc8-19"
+  name: "fc8-19"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 3
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-19"
+  top: "loss-19"
+  name: "loss-19"
+  type: "Softmax"
+}
+
+# Head 20
+layer {
+  bottom: "fc7"
+  top: "fc8-20"
+  name: "fc8-20"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-20"
+  top: "loss-20"
+  name: "loss-20"
+  type: "Softmax"
+}
+
+# Head 21
+layer {
+  bottom: "fc7"
+  top: "fc8-21"
+  name: "fc8-21"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 5
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-21"
+  top: "loss-21"
+  name: "loss-21"
+  type: "Softmax"
+}
+
+# Head 22
+layer {
+  bottom: "fc7"
+  top: "fc8-22"
+  name: "fc8-22"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 3
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-22"
+  top: "loss-22"
+  name: "loss-22"
+  type: "Softmax"
+}
+
+# Head 23
+layer {
+  bottom: "fc7"
+  top: "fc8-23"
+  name: "fc8-23"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 3
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-23"
+  top: "loss-23"
+  name: "loss-23"
+  type: "Softmax"
+}
+
+# Head 24
+layer {
+  bottom: "fc7"
+  top: "fc8-24"
+  name: "fc8-24"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-24"
+  top: "loss-24"
+  name: "loss-24"
+  type: "Softmax"
+}
+
+# Head 25
+layer {
+  bottom: "fc7"
+  top: "fc8-25"
+  name: "fc8-25"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 4
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-25"
+  top: "loss-25"
+  name: "loss-25"
+  type: "Softmax"
+}
+
+# Head 26
+layer {
+  bottom: "fc7"
+  top: "fc8-26"
+  name: "fc8-26"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-26"
+  top: "loss-26"
+  name: "loss-26"
+  type: "Softmax"
+}
+
+# Head 27
+layer {
+  bottom: "fc7"
+  top: "fc8-27"
+  name: "fc8-27"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-27"
+  top: "loss-27"
+  name: "loss-27"
+  type: "Softmax"
+}
+
+# Head 28
+layer {
+  bottom: "fc7"
+  top: "fc8-28"
+  name: "fc8-28"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-28"
+  top: "loss-28"
+  name: "loss-28"
+  type: "Softmax"
+}
+
+# Head 29
+layer {
+  bottom: "fc7"
+  top: "fc8-29"
+  name: "fc8-29"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-29"
+  top: "loss-29"
+  name: "loss-29"
+  type: "Softmax"
+}
+
+# Head 30
+layer {
+  bottom: "fc7"
+  top: "fc8-30"
+  name: "fc8-30"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-30"
+  top: "loss-30"
+  name: "loss-30"
+  type: "Softmax"
+}
+
+# Head 31
+layer {
+  bottom: "fc7"
+  top: "fc8-31"
+  name: "fc8-31"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-31"
+  top: "loss-31"
+  name: "loss-31"
+  type: "Softmax"
+}
+
+# Head 32
+layer {
+  bottom: "fc7"
+  top: "fc8-32"
+  name: "fc8-32"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-32"
+  top: "loss-32"
+  name: "loss-32"
+  type: "Softmax"
+}
+
+# Head 33
+layer {
+  bottom: "fc7"
+  top: "fc8-33"
+  name: "fc8-33"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 3
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-33"
+  top: "loss-33"
+  name: "loss-33"
+  type: "Softmax"
+}
+
+# Head 34
+layer {
+  bottom: "fc7"
+  top: "fc8-34"
+  name: "fc8-34"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-34"
+  top: "loss-34"
+  name: "loss-34"
+  type: "Softmax"
+}
+
+# Head 35
+layer {
+  bottom: "fc7"
+  top: "fc8-35"
+  name: "fc8-35"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-35"
+  top: "loss-35"
+  name: "loss-35"
+  type: "Softmax"
+}
+
+# Head 36
+layer {
+  bottom: "fc7"
+  top: "fc8-36"
+  name: "fc8-36"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-36"
+  top: "loss-36"
+  name: "loss-36"
+  type: "Softmax"
+}
+
+# Head 37
+layer {
+  bottom: "fc7"
+  top: "fc8-37"
+  name: "fc8-37"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-37"
+  top: "loss-37"
+  name: "loss-37"
+  type: "Softmax"
+}
+
+# Head 38
+layer {
+  bottom: "fc7"
+  top: "fc8-38"
+  name: "fc8-38"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-38"
+  top: "loss-38"
+  name: "loss-38"
+  type: "Softmax"
+}
+
+# Head 39
+layer {
+  bottom: "fc7"
+  top: "fc8-39"
+  name: "fc8-39"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-39"
+  top: "loss-39"
+  name: "loss-39"
+  type: "Softmax"
+}
+
+# Head 40
+layer {
+  bottom: "fc7"
+  top: "fc8-40"
+  name: "fc8-40"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-40"
+  top: "loss-40"
+  name: "loss-40"
+  type: "Softmax"
+}
+
+# Head 41
+layer {
+  bottom: "fc7"
+  top: "fc8-41"
+  name: "fc8-41"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-41"
+  top: "loss-41"
+  name: "loss-41"
+  type: "Softmax"
+}
+
+# Head 42
+layer {
+  bottom: "fc7"
+  top: "fc8-42"
+  name: "fc8-42"
+  type: "InnerProduct"
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  bottom: "fc8-42"
+  top: "loss-42"
+  name: "loss-42"
+  type: "Softmax"
+}
