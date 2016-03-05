@@ -1,12 +1,12 @@
 net: "DeepFaceNet.prototxt"
-test_iter: 500
+test_iter: 320
 test_interval: 1000
 base_lr: 0.000005
 lr_policy: "fixed"
 #gamma: 0.1
 stepsize: 1
 display: 20
-max_iter: 70000
+max_iter: 42000
 momentum: 0.9
 weight_decay: 0.0005
 snapshot: 5000
