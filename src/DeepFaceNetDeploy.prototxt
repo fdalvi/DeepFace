@@ -5,7 +5,125 @@ input_dim: 1
 input_dim: 3
 input_dim: 224
 input_dim: 224
+# input: "label"
 force_backward: true
+layer {
+  top: "label"
+  name: "label"
+  type: "Data"
+  data_param {
+    source: "../data/labels-train-lmdb/"
+    backend: LMDB
+    batch_size: 1
+  }
+  include: {
+    phase: TRAIN
+  }
+}
+layer {
+  top: "label"
+  name: "label"
+  type: "Data"
+  data_param {
+    source: "../data/labels-test-lmdb/"
+    backend: LMDB
+    batch_size: 1
+  }
+  include: {
+    phase: TEST
+  }
+}
+layer {
+  name: "slicer_label"
+  type: "Slice"
+  bottom: "label"
+  top: "label-1"
+  top: "label-2"
+  top: "label-3"
+  top: "label-4"
+  top: "label-5"
+  top: "label-6"
+  top: "label-7"
+  top: "label-8"
+  top: "label-9"
+  top: "label-10"
+  top: "label-11"
+  top: "label-12"
+  top: "label-13"
+  top: "label-14"
+  top: "label-15"
+  top: "label-16"
+  top: "label-17"
+  top: "label-18"
+  top: "label-19"
+  top: "label-20"
+  top: "label-21"
+  top: "label-22"
+  top: "label-23"
+  top: "label-24"
+  top: "label-25"
+  top: "label-26"
+  top: "label-27"
+  top: "label-28"
+  top: "label-29"
+  top: "label-30"
+  top: "label-31"
+  top: "label-32"
+  top: "label-33"
+  top: "label-34"
+  top: "label-35"
+  top: "label-36"
+  top: "label-37"
+  top: "label-38"
+  top: "label-39"
+  top: "label-40"
+  top: "label-41"
+  top: "label-42"
+  slice_param {
+    slice_dim: 1
+    slice_point: 1
+    slice_point: 2
+    slice_point: 3
+    slice_point: 4
+    slice_point: 5
+    slice_point: 6
+    slice_point: 7
+    slice_point: 8
+    slice_point: 9
+    slice_point: 10
+    slice_point: 11
+    slice_point: 12
+    slice_point: 13
+    slice_point: 14
+    slice_point: 15
+    slice_point: 16
+    slice_point: 17
+    slice_point: 18
+    slice_point: 19
+    slice_point: 20
+    slice_point: 21
+    slice_point: 22
+    slice_point: 23
+    slice_point: 24
+    slice_point: 25
+    slice_point: 26
+    slice_point: 27
+    slice_point: 28
+    slice_point: 29
+    slice_point: 30
+    slice_point: 31
+    slice_point: 32
+    slice_point: 33
+    slice_point: 34
+    slice_point: 35
+    slice_point: 36
+    slice_point: 37
+    slice_point: 38
+    slice_point: 39
+    slice_point: 40
+    slice_point: 41
+  }
+}
 layer {
   bottom: "data"
   top: "conv1_1"
@@ -345,7 +463,7 @@ layer {
 #   bottom: "fc8"
 #   top: "prob"
 #   name: "prob"
-#   type: "Softmax"
+#   type: "SoftmaxWithLoss"
 # }
 # layer {
 #   name: "argmax"
@@ -372,9 +490,10 @@ layer {
 # }
 # layer {
 #   bottom: "fc8-1"
+#   bottom: "label-1"
 #   top: "loss-1"
 #   name: "loss-1"
-#   type: "Softmax"
+#   type: "SoftmaxWithLoss"
 # }
 # layer {
 #   name: "argmax-1"
@@ -401,10 +520,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-1"
+  type: "Accuracy"
   bottom: "fc8-1"
+  bottom: "label-1"
+  top: "accuracy-1"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-1"
+  bottom: "label-1"
   top: "loss-1"
   name: "loss-1"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 2
@@ -424,10 +554,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-2"
+  type: "Accuracy"
   bottom: "fc8-2"
+  bottom: "label-2"
+  top: "accuracy-2"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-2"
+  bottom: "label-2"
   top: "loss-2"
   name: "loss-2"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 3
@@ -447,10 +588,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-3"
+  type: "Accuracy"
   bottom: "fc8-3"
+  bottom: "label-3"
+  top: "accuracy-3"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-3"
+  bottom: "label-3"
   top: "loss-3"
   name: "loss-3"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 4
@@ -470,10 +622,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-4"
+  type: "Accuracy"
   bottom: "fc8-4"
+  bottom: "label-4"
+  top: "accuracy-4"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-4"
+  bottom: "label-4"
   top: "loss-4"
   name: "loss-4"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 5
@@ -493,10 +656,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-5"
+  type: "Accuracy"
   bottom: "fc8-5"
+  bottom: "label-5"
+  top: "accuracy-5"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-5"
+  bottom: "label-5"
   top: "loss-5"
   name: "loss-5"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 6
@@ -516,10 +690,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-6"
+  type: "Accuracy"
   bottom: "fc8-6"
+  bottom: "label-6"
+  top: "accuracy-6"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-6"
+  bottom: "label-6"
   top: "loss-6"
   name: "loss-6"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 7
@@ -539,10 +724,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-7"
+  type: "Accuracy"
   bottom: "fc8-7"
+  bottom: "label-7"
+  top: "accuracy-7"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-7"
+  bottom: "label-7"
   top: "loss-7"
   name: "loss-7"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 8
@@ -562,10 +758,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-8"
+  type: "Accuracy"
   bottom: "fc8-8"
+  bottom: "label-8"
+  top: "accuracy-8"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-8"
+  bottom: "label-8"
   top: "loss-8"
   name: "loss-8"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 9
@@ -585,10 +792,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-9"
+  type: "Accuracy"
   bottom: "fc8-9"
+  bottom: "label-9"
+  top: "accuracy-9"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-9"
+  bottom: "label-9"
   top: "loss-9"
   name: "loss-9"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 10
@@ -608,10 +826,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-10"
+  type: "Accuracy"
   bottom: "fc8-10"
+  bottom: "label-10"
+  top: "accuracy-10"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-10"
+  bottom: "label-10"
   top: "loss-10"
   name: "loss-10"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 11
@@ -631,10 +860,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-11"
+  type: "Accuracy"
   bottom: "fc8-11"
+  bottom: "label-11"
+  top: "accuracy-11"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-11"
+  bottom: "label-11"
   top: "loss-11"
   name: "loss-11"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 12
@@ -654,10 +894,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-12"
+  type: "Accuracy"
   bottom: "fc8-12"
+  bottom: "label-12"
+  top: "accuracy-12"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-12"
+  bottom: "label-12"
   top: "loss-12"
   name: "loss-12"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 13
@@ -677,10 +928,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-13"
+  type: "Accuracy"
   bottom: "fc8-13"
+  bottom: "label-13"
+  top: "accuracy-13"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-13"
+  bottom: "label-13"
   top: "loss-13"
   name: "loss-13"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 14
@@ -700,10 +962,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-14"
+  type: "Accuracy"
   bottom: "fc8-14"
+  bottom: "label-14"
+  top: "accuracy-14"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-14"
+  bottom: "label-14"
   top: "loss-14"
   name: "loss-14"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 15
@@ -723,10 +996,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-15"
+  type: "Accuracy"
   bottom: "fc8-15"
+  bottom: "label-15"
+  top: "accuracy-15"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-15"
+  bottom: "label-15"
   top: "loss-15"
   name: "loss-15"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 16
@@ -746,10 +1030,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-16"
+  type: "Accuracy"
   bottom: "fc8-16"
+  bottom: "label-16"
+  top: "accuracy-16"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-16"
+  bottom: "label-16"
   top: "loss-16"
   name: "loss-16"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 17
@@ -769,10 +1064,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-17"
+  type: "Accuracy"
   bottom: "fc8-17"
+  bottom: "label-17"
+  top: "accuracy-17"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-17"
+  bottom: "label-17"
   top: "loss-17"
   name: "loss-17"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 18
@@ -792,10 +1098,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-18"
+  type: "Accuracy"
   bottom: "fc8-18"
+  bottom: "label-18"
+  top: "accuracy-18"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-18"
+  bottom: "label-18"
   top: "loss-18"
   name: "loss-18"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 19
@@ -815,10 +1132,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-19"
+  type: "Accuracy"
   bottom: "fc8-19"
+  bottom: "label-19"
+  top: "accuracy-19"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-19"
+  bottom: "label-19"
   top: "loss-19"
   name: "loss-19"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 20
@@ -838,10 +1166,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-20"
+  type: "Accuracy"
   bottom: "fc8-20"
+  bottom: "label-20"
+  top: "accuracy-20"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-20"
+  bottom: "label-20"
   top: "loss-20"
   name: "loss-20"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 21
@@ -861,10 +1200,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-21"
+  type: "Accuracy"
   bottom: "fc8-21"
+  bottom: "label-21"
+  top: "accuracy-21"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-21"
+  bottom: "label-21"
   top: "loss-21"
   name: "loss-21"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 22
@@ -884,10 +1234,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-22"
+  type: "Accuracy"
   bottom: "fc8-22"
+  bottom: "label-22"
+  top: "accuracy-22"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-22"
+  bottom: "label-22"
   top: "loss-22"
   name: "loss-22"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 23
@@ -907,10 +1268,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-23"
+  type: "Accuracy"
   bottom: "fc8-23"
+  bottom: "label-23"
+  top: "accuracy-23"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-23"
+  bottom: "label-23"
   top: "loss-23"
   name: "loss-23"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 24
@@ -930,10 +1302,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-24"
+  type: "Accuracy"
   bottom: "fc8-24"
+  bottom: "label-24"
+  top: "accuracy-24"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-24"
+  bottom: "label-24"
   top: "loss-24"
   name: "loss-24"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 25
@@ -953,10 +1336,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-25"
+  type: "Accuracy"
   bottom: "fc8-25"
+  bottom: "label-25"
+  top: "accuracy-25"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-25"
+  bottom: "label-25"
   top: "loss-25"
   name: "loss-25"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 26
@@ -976,10 +1370,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-26"
+  type: "Accuracy"
   bottom: "fc8-26"
+  bottom: "label-26"
+  top: "accuracy-26"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-26"
+  bottom: "label-26"
   top: "loss-26"
   name: "loss-26"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 27
@@ -999,10 +1404,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-27"
+  type: "Accuracy"
   bottom: "fc8-27"
+  bottom: "label-27"
+  top: "accuracy-27"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-27"
+  bottom: "label-27"
   top: "loss-27"
   name: "loss-27"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 28
@@ -1022,10 +1438,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-28"
+  type: "Accuracy"
   bottom: "fc8-28"
+  bottom: "label-28"
+  top: "accuracy-28"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-28"
+  bottom: "label-28"
   top: "loss-28"
   name: "loss-28"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 29
@@ -1045,10 +1472,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-29"
+  type: "Accuracy"
   bottom: "fc8-29"
+  bottom: "label-29"
+  top: "accuracy-29"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-29"
+  bottom: "label-29"
   top: "loss-29"
   name: "loss-29"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 30
@@ -1068,10 +1506,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-30"
+  type: "Accuracy"
   bottom: "fc8-30"
+  bottom: "label-30"
+  top: "accuracy-30"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-30"
+  bottom: "label-30"
   top: "loss-30"
   name: "loss-30"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 31
@@ -1091,10 +1540,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-31"
+  type: "Accuracy"
   bottom: "fc8-31"
+  bottom: "label-31"
+  top: "accuracy-31"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-31"
+  bottom: "label-31"
   top: "loss-31"
   name: "loss-31"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 32
@@ -1114,10 +1574,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-32"
+  type: "Accuracy"
   bottom: "fc8-32"
+  bottom: "label-32"
+  top: "accuracy-32"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-32"
+  bottom: "label-32"
   top: "loss-32"
   name: "loss-32"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 33
@@ -1137,10 +1608,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-33"
+  type: "Accuracy"
   bottom: "fc8-33"
+  bottom: "label-33"
+  top: "accuracy-33"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-33"
+  bottom: "label-33"
   top: "loss-33"
   name: "loss-33"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 34
@@ -1160,10 +1642,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-34"
+  type: "Accuracy"
   bottom: "fc8-34"
+  bottom: "label-34"
+  top: "accuracy-34"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-34"
+  bottom: "label-34"
   top: "loss-34"
   name: "loss-34"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 35
@@ -1183,10 +1676,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-35"
+  type: "Accuracy"
   bottom: "fc8-35"
+  bottom: "label-35"
+  top: "accuracy-35"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-35"
+  bottom: "label-35"
   top: "loss-35"
   name: "loss-35"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 36
@@ -1206,10 +1710,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-36"
+  type: "Accuracy"
   bottom: "fc8-36"
+  bottom: "label-36"
+  top: "accuracy-36"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-36"
+  bottom: "label-36"
   top: "loss-36"
   name: "loss-36"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 37
@@ -1229,10 +1744,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-37"
+  type: "Accuracy"
   bottom: "fc8-37"
+  bottom: "label-37"
+  top: "accuracy-37"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-37"
+  bottom: "label-37"
   top: "loss-37"
   name: "loss-37"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 38
@@ -1252,10 +1778,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-38"
+  type: "Accuracy"
   bottom: "fc8-38"
+  bottom: "label-38"
+  top: "accuracy-38"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-38"
+  bottom: "label-38"
   top: "loss-38"
   name: "loss-38"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 39
@@ -1275,10 +1812,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-39"
+  type: "Accuracy"
   bottom: "fc8-39"
+  bottom: "label-39"
+  top: "accuracy-39"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-39"
+  bottom: "label-39"
   top: "loss-39"
   name: "loss-39"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 40
@@ -1298,10 +1846,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-40"
+  type: "Accuracy"
   bottom: "fc8-40"
+  bottom: "label-40"
+  top: "accuracy-40"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-40"
+  bottom: "label-40"
   top: "loss-40"
   name: "loss-40"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 41
@@ -1321,10 +1880,21 @@ layer {
   }
 }
 layer {
+  name: "accuracy-41"
+  type: "Accuracy"
   bottom: "fc8-41"
+  bottom: "label-41"
+  top: "accuracy-41"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-41"
+  bottom: "label-41"
   top: "loss-41"
   name: "loss-41"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }
 
 # Head 42
@@ -1344,8 +1914,19 @@ layer {
   }
 }
 layer {
+  name: "accuracy-42"
+  type: "Accuracy"
   bottom: "fc8-42"
+  bottom: "label-42"
+  top: "accuracy-42"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  bottom: "fc8-42"
+  bottom: "label-42"
   top: "loss-42"
   name: "loss-42"
-  type: "Softmax"
+  type: "SoftmaxWithLoss"
 }

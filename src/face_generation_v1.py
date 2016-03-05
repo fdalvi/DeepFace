@@ -2,20 +2,23 @@ import numpy as np
 import os
 import random
 import caffe
-
+import matplotlib.pyplot as plt
 
 def class_visualization(target_y): 
+	L2_REG = 1e-6
+	learning_rate = 10000
 	solver_path = './DeepFaceNetDeploy.prototxt'
 	weights_path = './snapshots/_iter_20000.caffemodel'
 
+	# Load the network
 	net = caffe.Net(solver_path, 
 					weights_path, 
-					caffe.TEST)
+					caffe.TRAIN)
 
-
+	# Start with a random image
 	X = np.random.randn(224,224,3)
 
-	##set up blob data
+	# Set up blob data
 	transformer = caffe.io.Transformer({'data': net.blobs['data'].data.shape})
 	transformer.set_transpose('data', (2,0,1))
 
@@ -24,52 +27,41 @@ def class_visualization(target_y):
 	net.blobs['data'].reshape(1, data_blob_shape[1], data_blob_shape[2], data_blob_shape[3])
 	net.blobs['data'].data[...] = transformer.preprocess('data', X)
 
-	all_diffs = []
+	# Set the target diffs at fc8 layers
+	one_hots = []
 	for i in xrange(1,43):
 		diff = net.blobs['fc8-%d'%(i)].diff
 		one_hot = np.zeros_like(diff)
 		one_hot[0, target_y[i-1]] = 1
-		net.blobs['fc8-%d'%(i)].data[...] = one_hot
-		net.blobs['fc8-%d'%(i)].diff[...] = np.zeros_like(diff)
-		print net.blobs['fc8-%d'%(i)].data
-		# all_diffs.append(net.blobs['fc8-%d'%(i)])
-		all_diffs.append('fc8-%d'%(i))
+		# net.blobs['fc8-%d'%(i)].data[...] = one_hot
+		net.blobs['fc8-%d'%(i)].diff[...] = one_hot
+		one_hots.append(one_hot)
 
-
-	# print net.blobs['data'].data
-	# print type(net.blobs['data'].data)
-	# print net.blobs['data'].data.shape
-	_ = net.forward()
-	dX = net.backward()
-
-	# X, dX = net.forward_backward_all(blobs=[net.blobs['data']], diffs=all_diffs, None)
-	# X, dX = net.forward_backward_all()
-	print dX
-	print net.blobs['conv1_1'].diff
-	print net.blobs['data'].diff
-
-
-	# X = np.random.randn(1, 3, 64, 64)
-	# scores, _ = model.forward(X)
-	# one_hot_scores = np.zeros(scores.shape)
-	# one_hot_scores[0,target_y] = 1
-	# for t in xrange(num_iterations):
+	for t in xrange(10):
 	# 	# As a regularizer, add random jitter to the image
 	# 	ox, oy = np.random.randint(-max_jitter, max_jitter+1, 2)
 	# 	X = np.roll(np.roll(X, ox, -1), oy, -2)
+		print 'Performing forward pass...'
+		net.blobs['data'].data[...] = transformer.preprocess('data', X)
+		for i in xrange(1,43):
+			net.blobs['fc8-%d'%(i)].diff[...] = one_hots[i-1]
 
-	# 	dX = None
-	# 	############################################################################
-	# 	# TODO: Compute the image gradient dX of the image with respect to the     #
-	# 	# target_y class score. This should be similar to the fooling images. Also #
-	# 	# add L2 regularization to dX and update the image X using the image       #
-	# 	# gradient and the learning rate.                                          #
-	# 	############################################################################
-	# 	_, cache = model.forward(X, mode="test")
-	# 	dX, grads = model.backward(one_hot_scores, cache)
-	# 	dX -= 2*l2_reg*X
-	# 	X += learning_rate*dX
+		_ = net.forward()
+		dX = net.backward()
+		dX = dX['data']
+		dX = dX[0, :, :, :]
+		dX = np.transpose(dX, (1, 2, 0))
 
+		dX -= 2*L2_REG*X
+		X += learning_rate*dX
+
+		print 'done...'
+		# deprocess_image(X, data['mean_image'])
+		plt.imshow(X)
+		# plt.gcf().set_size_inches(3, 3)
+		plt.axis('off')
+		plt.savefig('outputs/image-%d.png'%(t))
+ #  
 	# 	############################################################################
 	# 	#                             END OF YOUR CODE                             #
 	# 	############################################################################
