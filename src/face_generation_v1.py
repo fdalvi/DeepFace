@@ -88,7 +88,7 @@ def class_visualization(target_y):
 		# if t % blur_every == 0:
 		# 	X = blur_image(X)
 		
-		if t % 10 == 0:
+		if t % 10 == 0 or t == NUM_ITERATIONS - 1:
 			print 'Saving image %d'%(t)
 			plt.clf()
 			plt.imshow(deprocess_image(X, mean_image))
@@ -96,9 +96,53 @@ def class_visualization(target_y):
 			plt.savefig('outputs/image-%d.png'%(t))
 
 def main(): 
+	# 0: "Male",
+	# 1: "Asian", "White", "Black", "Indian",
+	# 2: "Baby", "Child", "Youth", "Middle Aged", "Senior",
+	# 3: "Black Hair", "Blond Hair", "Brown Hair", "Gray Hair",
+	# 4: "Bald", "Receding Hairline",
+	# 5: "No Eyewear", "Eyeglasses", "Sunglasses",
+	# 6: "Mustache",
+	# 7: "Smiling", "Frowning",
+	# 8: "Chubby",
+	# 9: "Blurry",
+	# 10: "Harsh Lighting", "Flash", "Soft Lighting",
+	# 11: "Outdoor",
+	# 12: "Curly Hair", "Wavy Hair", "Straight Hair",
+	# 13: "Bangs",
+	# 14: "Sideburns",
+	# 15: "Fully Visible Forehead", "Partially Visible Forehead", "Obstructed Forehead",
+	# 16: "Bushy Eyebrows", "Arched Eyebrows",
+	# 17: "Narrow Eyes", "Eyes Open",
+	# 18: "Big Nose", "Pointy Nose",
+	# 19: "Big Lips",
+	# 20: "Mouth Closed", "Mouth Slightly Open", "Mouth Wide Open", "Teeth Not Visible",
+	# 21: "No Beard", "Goatee",
+	# 22: "Round Jaw", "Double Chin",
+	# 23: "Wearing Hat",
+	# 24: "Oval Face", "Square Face", "Round Face",
+	# 25: "Color Photo",
+	# 26: "Posed Photo",
+	# 27: "Attractive Man",
+	# 28: "Attractive Woman",
+	# 29: "Bags Under Eyes",
+	# 30: "Heavy Makeup",
+	# 31: "Rosy Cheeks",
+	# 32: "Shiny Skin", "Pale Skin",
+	# 33: "5 o' Clock Shadow",
+	# 34: "Strong Nose-Mouth Lines",
+	# 35: "Wearing Lipstick",
+	# 36: "Flushed Face",
+	# 37: "High Cheekbones",
+	# 38: "Brown Eyes",
+	# 39: "Wearing Earrings",
+	# 40: "Wearing Necktie",
+	# 41: "Wearing Necklace",
 	target_y = np.array([0]*42)
-	target_y[5] = 1
-	target_y[10] = 1
+	target_y[0] = 1 # Male
+	target_y[1] = 3 # Black
+	target_y[2] = 3 # Youth
+	target_y[3] = 1 # Black hair
 	class_visualization(target_y)
 
 
