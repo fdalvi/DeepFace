@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import os
 import random
+import cPickle as cp
+import caffe
 
 CONSOLIDATED_LABELS = [[0],[1, 2, 3, 57],[4, 5, 6, 7, 8],[9, 10, 11, 58],
 						 [12, 28],[13, 14, 15],[16],[17, 18],[19],
@@ -99,6 +101,61 @@ def consolidate_labels(original_labels, image_names = None, debug=False):
 	return consolidated_matrix
 
 
+def extract_activations(layer, data_path, weights_path, solver_path, output_path, batch_size=25): 
+	assert os.path.exists(data_path)
+	assert os.path.exists(weights_path)
+	assert os.path.exists(solver_path)
+		
+	caffe.set_mode_gpu()
+	
+	images = get_image_names(data_path)
+	num_images = len(images)
+	if num_images == 0:
+		return
+
+	if not os.path.exists(output_path + 'out-%s'%(layer)):
+		os.makedirs(output_path + 'out-%s'%(layer))
+	with open(output_path + 'out-%s/image_list.dat'%(layer), 'w+') as fp:
+		cp.dump(images, fp)
+
+	images_with_path = [data_path + i + '.jpg' for i in images]
+	if num_images % batch_size != 0:
+		images_with_path = images_with_path + [images_with_path[-1]]*(batch_size - (num_images % batch_size))
+
+	net = caffe.Net(solver_path,
+	                weights_path,
+	                caffe.TEST)
+
+	transformer = caffe.io.Transformer({'data': net.blobs['data'].data.shape})
+	transformer.set_transpose('data', (2,0,1))
+
+	data_blob_shape = net.blobs['data'].data.shape
+	data_blob_shape = list(data_blob_shape)
+	net.blobs['data'].reshape(batch_size, data_blob_shape[1], data_blob_shape[2], data_blob_shape[3])
+
+	out = np.zeros((num_images, 4096))
+	for i in xrange(len(images_with_path) / batch_size):
+		start_idx = i*batch_size
+		extended_end_idx = (i+1)*batch_size
+		end_idx = min(extended_end_idx, num_images)
+
+		print 'Iteration %d of %d'%(i+1, num_images / batch_size + 1)
+		net.blobs['data'].data[...] = map(lambda x: transformer.preprocess('data',caffe.io.load_image(x)), \
+			images_with_path[i*batch_size:(i+1)*batch_size])
+		# print '[thread=%d]'%i, start_idx, end_idx
+		out[start_idx:end_idx,:] = net.forward(end=layer)[layer][:end_idx-start_idx]
+		# net_forward(net, 
+		# 			transformer, 
+		# 			images_with_path[i*batch_size:(i+1)*batch_size],
+		# 			out_fc7,
+		# 			i, 
+		# 			batch_size, 
+		# 			num_images,
+		# 			'blob_%d'%(i))
+
+	np.save(output_path + 'out-%s/blob.dat'%(layer), out)
+
+
 def test():
 	##### GET_IMAGE_NAMES test #####
 	print get_image_names('../data/dev_set/images_cropped/')
@@ -111,6 +168,9 @@ def test():
 	consolidated_atts = consolidate_labels(atts, pic_list)
 	print consolidated_atts
 	print consolidated_atts.shape
+
+
+
 
 if __name__ == '__main__':
 	test()
