@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 
 def deprocess_image(X, mean_image):
 	r = X.copy()
-	r = r.astype(np.int)
+	r = r.astype(np.uint8)
+	r = r[:,:,::-1]
 	r += mean_image
 	return r
 
@@ -17,8 +18,8 @@ def class_visualization(target_y):
 	MAX_JITTER = 4
 
 	solver_path = './DeepFaceNetDeploy.prototxt'
-	weights_path = './snapshots/_iter_20000.caffemodel'
-	mean_image = np.load("../data/mean_image.npy").astype(np.int)
+	weights_path = './snapshots/_iter_42000.caffemodel'
+	mean_image = np.load("../data/mean_image.npy").astype(np.uint8)
 
 	# Load the network
 	net = caffe.Net(solver_path, 
@@ -26,8 +27,20 @@ def class_visualization(target_y):
 					caffe.TRAIN)
 
 	# Start with a random image
-	X = np.random.randint(0, 256, size=(224,224,3)).astype(np.float)
-	X -= mean_image
+	# X = np.random.randint(0, 256, size=(224,224,3)).astype(np.float)
+	# X -= mean_image
+	# X = X[:,:,::-1]
+
+	mean_image_bgr = mean_image[:,:,::-1].astype(np.float)
+	# print mean_image_bgr.flatten()[0:50]
+
+	X = np.random.normal(0, 10, (224, 224, 3))
+	plt.clf()
+	plt.imshow(mean_image)
+	plt.axis('off')
+	plt.savefig('outputs/mean-image.png')
+	# out=Image.fromarray(mean_image,mode="RGB")
+	# out.save('outputs/mean-image.png')
 
 	# Set up blob data
 	transformer = caffe.io.Transformer({'data': net.blobs['data'].data.shape})
@@ -57,14 +70,20 @@ def class_visualization(target_y):
 	# print 'After'
 	# print net.blobs['fc8-1'].diff
 	# print net.blobs['fc8-42'].diff
+	
+	print 'Saving image %d'%(0)
+	plt.clf()
+	plt.imshow(deprocess_image(X, mean_image))
+	plt.axis('off')
+	plt.savefig('outputs/image-%d.png'%(t))
 
 	# print mean_image.flatten()[0:10]
-	for t in xrange(NUM_ITERATIONS):
+	for t in xrange(1, NUM_ITERATIONS+1):
 		# As a regularizer, add random jitter to the image
 		ox, oy = np.random.randint(-MAX_JITTER, MAX_JITTER+1, 2)
 		X = np.roll(np.roll(X, ox, -1), oy, -2)
 
-		print 'Performing iteration %d...'%(t+1)
+		print 'Performing iteration %d...'%(t)
 		net.blobs['data'].data[...] = transformer.preprocess('data', X)
 		for i in xrange(1,43):
 			net.blobs['fc8-%d'%(i)].diff[...] = one_hots[i-1]
@@ -76,19 +95,23 @@ def class_visualization(target_y):
 		dX = np.transpose(dX, (1, 2, 0))
 
 		dX -= 2*L2_REG*X
+		# print dX.flatten()[0:50]
 		X += LEARNING_RATE*dX
 
 		# Undo the jitter
 		X = np.roll(np.roll(X, -ox, -1), -oy, -2)
 		
 		# As a regularizer, clip the image
-		X = np.clip(X, -mean_image, 255.0 - mean_image)
+		# print X.flatten()[0:50]
+		X = np.clip(X, -mean_image_bgr, 255.0 - mean_image_bgr)
+		# print X.flatten()[0:50]
+		# print '--------------'
 		
 		# As a regularizer, periodically blur the image
 		# if t % blur_every == 0:
 		# 	X = blur_image(X)
 		
-		if t % 10 == 0 or t == NUM_ITERATIONS - 1:
+		if t % 10 == 0 or t == NUM_ITERATIONS:
 			print 'Saving image %d'%(t)
 			plt.clf()
 			plt.imshow(deprocess_image(X, mean_image))
