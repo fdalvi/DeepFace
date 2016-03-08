@@ -151,6 +151,8 @@ def sample_activations(layer, data_path, weights_path, solver_path, output_path,
 	assert os.path.exists(data_path)
 	assert os.path.exists(weights_path)
 	assert os.path.exists(solver_path)
+
+	extracted_feats_path = os.path.join(output_path, 'feats')
 		
 	caffe.set_mode_gpu()
 
@@ -159,8 +161,8 @@ def sample_activations(layer, data_path, weights_path, solver_path, output_path,
 	if num_images == 0:
 		return
 
-	if not os.path.exists(output_path + 'outs-%s-%d'%(layer, num_samples)):
-		os.makedirs(output_path + 'outs-%s-%d'%(layer, num_samples))
+	if not os.path.exists(extracted_feats_path):
+		os.makedirs(extracted_feats_path)
 	
 	images_with_path = [data_path + i + '.jpg' for i in images]
 	if num_images % batch_size != 0:
@@ -197,7 +199,7 @@ def sample_activations(layer, data_path, weights_path, solver_path, output_path,
 			selected_examples.append(images_with_path[selected_examples_idx[j]])
 		# print "length of selected examples, attribute %d"%(i), len(selected_examples)
 
-		with open(output_path + 'outs-%s-%d/image_list_%d.dat'%(layer, num_samples, i+1), 'w+') as fp:
+		with open(os.path.join(extracted_feats_path, 'image_list_%d.dat'%(i+1)), 'w+') as fp:
 			cp.dump(selected_examples, fp)
 
 		out = np.zeros(out_dim)
@@ -211,8 +213,7 @@ def sample_activations(layer, data_path, weights_path, solver_path, output_path,
 				selected_examples[k*batch_size:(k+1)*batch_size])
 			out[start_idx:end_idx,:] = net.forward(end=layer)[layer][:end_idx-start_idx]
 
-		np.save(output_path + 'outs-%s-%d/blob-%d.dat'%(layer, num_samples, i+1), out)
-
+		np.save(os.path.join(extracted_feats_path, 'blob-%d.dat'%(i+1)), out)
 
 def deprocess_image(X, mean_image):
 	r = X.copy()

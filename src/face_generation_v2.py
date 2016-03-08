@@ -14,9 +14,9 @@ DATA_PATH = '../data/eval_set/images_cropped/'
 WEIGHTS_PATH = './snapshots/_iter_42000.caffemodel'
 SOLVER_PATH = './DeepFaceNetDeploy.prototxt'
 LAYER = 'conv3_1'
-OUTPUT_PATH = './'
 # NUM_ATTRIBUTES = 73
 NUM_SAMPLES = 100
+OUTPUT_PATH = './trial_%s_%d/'%(LAYER, NUM_SAMPLES)
 
 LAYER_SIZES = {
 		  "conv1_1": (224, 224, 64), 
@@ -65,9 +65,12 @@ def compute_means_vars_all():
 
 
 def compute_mean_vars(num_samples): 
-	with open(OUTPUT_PATH + 'outs-%s-%d/image_list_%d.dat'%(LAYER, num_samples, 1), 'rb') as fp:
+	extracted_feats_path = os.path.join(OUTPUT_PATH, 'feats')
+
+	# Extract first set of labels/activations to get all the dimensions
+	with open(os.path.join(extracted_feats_path, 'image_list_%d.dat'%(1)), 'rb') as fp:
 		images = cp.load(fp)
-	activations = np.load(OUTPUT_PATH + 'outs-%s-%d/blob-%d.dat.npy'%(LAYER, num_samples, 1))
+	activations = np.load(os.path.join(extracted_feats_path, 'blob-%d.dat.npy'%(1)))
 
 	labels = util.get_attributes('../data/pubfig_attributes.txt', [image.split('/')[-1][:-4] for image in images])
 	labels = labels.as_matrix()
@@ -79,22 +82,23 @@ def compute_mean_vars(num_samples):
 	vars_ = np.zeros((num_attributes, num_features))
 	for i in xrange(labels.shape[1]):
 		print 'Iteration %d...'%(i+1)
-		with open(OUTPUT_PATH + 'outs-%s-%d/image_list_%d.dat'%(LAYER, num_samples, i+1), 'rb') as fp:
+		with open(os.path.join(extracted_feats_path, 'image_list_%d.dat'%(i+1)), 'rb') as fp:
 			images = cp.load(fp)
-		selected_examples = np.load(OUTPUT_PATH + 'outs-%s-%d/blob-%d.dat.npy'%(LAYER, num_samples, i+1))
+		selected_examples = np.load(os.path.join(extracted_feats_path, 'blob-%d.dat.npy'%(i+1)))
 		# print selected_examples.shape
 		selected_examples = selected_examples.reshape((selected_examples.shape[0], -1))
 		means[i, :] = np.mean(selected_examples, axis=0)
 		# covs[i, :, :] = np.cov(selected_examples, rowvar=0)
 		vars_[i,:] = np.var(selected_examples, axis=0)
 
-	np.save('means-%s-%d'%(LAYER, num_samples), means)
-	np.save('vars-%s-%d'%(LAYER, num_samples), vars_)
-
+	np.save(os.path.join(OUTPUT_PATH, 'means'), means)
+	np.save(os.path.join(OUTPUT_PATH, 'vars'), vars_)
 
 def invert_features(target_feats, layer):
+	image_output_path = os.path.join(OUTPUT_PATH, 'outputs')
+
 	L2_REG = 1e-6
-	LEARNING_RATE = 20000
+	LEARNING_RATE = 1000
 	NUM_ITERATIONS = 200
 	MAX_JITTER = 4
 
@@ -102,8 +106,8 @@ def invert_features(target_feats, layer):
 	weights_path = './snapshots/_iter_42000.caffemodel'
 	mean_image = np.load("../data/mean_image.npy").astype(np.uint8)
 
-	if not os.path.exists('outputs-v2/'):
-		os.makedirs('outputs-v2/')
+	if not os.path.exists(image_output_path):
+		os.makedirs(image_output_path)
 
 	caffe.set_mode_gpu()
 	# Load the network
@@ -123,7 +127,7 @@ def invert_features(target_feats, layer):
 	plt.clf()
 	plt.imshow(mean_image)
 	plt.axis('off')
-	plt.savefig('outputs-v2/mean-image.png')
+	plt.savefig(os.path.join(image_output_path, 'mean-image.png'))
 	# out=Image.fromarray(mean_image,mode="RGB")
 	# out.save('outputs/mean-image.png')
 
@@ -140,7 +144,7 @@ def invert_features(target_feats, layer):
 	plt.clf()
 	plt.imshow(util.deprocess_image(X, mean_image))
 	plt.axis('off')
-	plt.savefig('outputs-v2/image-%d.png'%(0))
+	plt.savefig(os.path.join(image_output_path, 'image-%d.png'%(0)))
 
 	for t in xrange(1, NUM_ITERATIONS+1):
 		# As a regularizer, add random jitter to the image
@@ -179,7 +183,7 @@ def invert_features(target_feats, layer):
 			plt.clf()
 			plt.imshow(util.deprocess_image(X, mean_image))
 			plt.axis('off')
-			plt.savefig('outputs-v2/image-%d.png'%(t))
+			plt.savefig(os.path.join(image_output_path, 'image-%d.png'%(t)))
 
 
 def main(): 
@@ -189,16 +193,24 @@ def main():
 	else: 
 		mode = sys.argv[1]
 
+	if not os.path.exists(OUTPUT_PATH):
+		os.makedirs(OUTPUT_PATH)
+
 	if mode == 'extract':
+		print 'Running feature extraction...'
 		# util.extract_activations(LAYER, DATA_PATH, WEIGHTS_PATH, SOLVER_PATH, OUTPUT_PATH)
 		util.sample_activations(LAYER, DATA_PATH, WEIGHTS_PATH, SOLVER_PATH, OUTPUT_PATH, LAYER_SIZES[LAYER])
 		return
-	if mode == 'compute': 
+	if mode == 'compute':
+		print 'Computing mean/vars of extracted feats...' 
 		compute_mean_vars(num_samples=NUM_SAMPLES)
+		return
+
 
 	print 'Loading means and vars...'
-	means = np.load('means-%s-%d.npy'%(LAYER, NUM_SAMPLES))
-	vars_ = np.load('vars-%s-%d.npy'%(LAYER, NUM_SAMPLES))
+
+	means = np.load(os.path.join(OUTPUT_PATH, 'means.npy'))
+	vars_ = np.load(os.path.join(OUTPUT_PATH, 'vars.npy'))
 
 	print 'Building GMM...'
 	gmm = GMM(means, vars_)
@@ -211,6 +223,7 @@ def main():
 	target_vec[9] = 1
 	
 	target_outs = gmm.sample(target_vec)
+	target_outs = target_outs.reshape(LAYER_SIZES[LAYER]).transpose((2,0,1))
 	invert_features(target_outs, LAYER)
 
 
