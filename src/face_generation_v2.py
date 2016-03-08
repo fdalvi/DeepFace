@@ -189,12 +189,12 @@ def main():
 	else: 
 		mode = sys.argv[1]
 
-	num_samples
 	if mode == 'extract':
 		# util.extract_activations(LAYER, DATA_PATH, WEIGHTS_PATH, SOLVER_PATH, OUTPUT_PATH)
 		util.sample_activations(LAYER, DATA_PATH, WEIGHTS_PATH, SOLVER_PATH, OUTPUT_PATH, LAYER_SIZES[LAYER])
+		return
 	if mode == 'compute': 
-		compute_mean_vars(num_samples=num_samples)
+		compute_mean_vars(num_samples=NUM_SAMPLES)
 
 	print 'Loading means and vars...'
 	means = np.load('means-%s-%d.npy'%(LAYER, NUM_SAMPLES))
