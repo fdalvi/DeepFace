@@ -3,13 +3,7 @@ import os
 import random
 import caffe
 import matplotlib.pyplot as plt
-
-def deprocess_image(X, mean_image):
-	r = X.copy()
-	r = r.astype(np.uint8)
-	r = r[:,:,::-1]
-	r += mean_image
-	return r
+import util
 
 def class_visualization(target_y): 
 	L2_REG = 1e-6
@@ -21,7 +15,9 @@ def class_visualization(target_y):
 	weights_path = './snapshots/_iter_42000.caffemodel'
 	mean_image = np.load("../data/mean_image.npy").astype(np.uint8)
 
-	# Load the network
+	caffe.set_mode_gpu()
+
+	# Load the network	
 	net = caffe.Net(solver_path, 
 					weights_path, 
 					caffe.TRAIN)
@@ -34,11 +30,14 @@ def class_visualization(target_y):
 	mean_image_bgr = mean_image[:,:,::-1].astype(np.float)
 	# print mean_image_bgr.flatten()[0:50]
 
+	if not os.path.exists('outputs-v1/'):
+		os.makedirs('outputs-v1/')
+
 	X = np.random.normal(0, 10, (224, 224, 3))
 	plt.clf()
 	plt.imshow(mean_image)
 	plt.axis('off')
-	plt.savefig('outputs/mean-image.png')
+	plt.savefig('outputs-v1/mean-image.png')
 	# out=Image.fromarray(mean_image,mode="RGB")
 	# out.save('outputs/mean-image.png')
 
@@ -73,9 +72,9 @@ def class_visualization(target_y):
 	
 	print 'Saving image %d'%(0)
 	plt.clf()
-	plt.imshow(deprocess_image(X, mean_image))
+	plt.imshow(util.deprocess_image(X, mean_image))
 	plt.axis('off')
-	plt.savefig('outputs/image-%d.png'%(t))
+	plt.savefig('outputs-v1/image-%d.png'%(0))
 
 	# print mean_image.flatten()[0:10]
 	for t in xrange(1, NUM_ITERATIONS+1):
@@ -114,9 +113,9 @@ def class_visualization(target_y):
 		if t % 10 == 0 or t == NUM_ITERATIONS:
 			print 'Saving image %d'%(t)
 			plt.clf()
-			plt.imshow(deprocess_image(X, mean_image))
+			plt.imshow(util.deprocess_image(X, mean_image))
 			plt.axis('off')
-			plt.savefig('outputs/image-%d.png'%(t))
+			plt.savefig('outputs-v1/image-%d.png'%(t))
 
 def main(): 
 	# 0: "Male",
