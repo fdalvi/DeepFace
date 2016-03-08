@@ -13,9 +13,28 @@ from gmm import GMM
 DATA_PATH = '../data/eval_set/images_cropped/'
 WEIGHTS_PATH = './snapshots/_iter_42000.caffemodel'
 SOLVER_PATH = './DeepFaceNetDeploy.prototxt'
-LAYER = 'fc6'
+LAYER = 'conv3_1'
 OUTPUT_PATH = './'
 # NUM_ATTRIBUTES = 73
+NUM_SAMPLES = 100
+
+LAYER_SIZES = {
+		  "conv1_1": (224, 224, 64), 
+		  "conv1_2": (224, 224, 64), 
+		  "conv2_1": (112, 112, 128), 
+		  "conv2_2": (112, 112, 128), 
+		  "conv3_1": (56, 56, 256), 
+		  "conv3_2": (56, 56, 256), 
+		  "conv3_3": (56, 56, 256), 
+		  "conv4_1": (28, 28, 512), 
+		  "conv4_2": (28, 28, 512), 
+		  "conv4_3": (28, 28, 512), 
+		  "conv5_1": (14, 14, 512), 
+		  "conv5_2": (14, 14, 512), 
+		  "conv5_3": (14, 14, 512), 
+		  "fc6": (4096, ),
+		  "fc7": (4096, )
+		}
 
 def compute_means_vars_all(): 
 	with open(OUTPUT_PATH + 'outs-%s/image_list.dat'%(LAYER), 'rb') as fp:
@@ -170,15 +189,16 @@ def main():
 	else: 
 		mode = sys.argv[1]
 
+	num_samples
 	if mode == 'extract':
 		# util.extract_activations(LAYER, DATA_PATH, WEIGHTS_PATH, SOLVER_PATH, OUTPUT_PATH)
-		util.sample_activations(LAYER, DATA_PATH, WEIGHTS_PATH, SOLVER_PATH, OUTPUT_PATH)
+		util.sample_activations(LAYER, DATA_PATH, WEIGHTS_PATH, SOLVER_PATH, OUTPUT_PATH, LAYER_SIZES[LAYER])
 	if mode == 'compute': 
-		compute_mean_vars(num_samples=100)
+		compute_mean_vars(num_samples=num_samples)
 
 	print 'Loading means and vars...'
-	means = np.load('means-fc6-100.npy')
-	vars_ = np.load('vars-fc6-100.npy')
+	means = np.load('means-%s-%d.npy'%(LAYER, NUM_SAMPLES))
+	vars_ = np.load('vars-%s-%d.npy'%(LAYER, NUM_SAMPLES))
 
 	print 'Building GMM...'
 	gmm = GMM(means, vars_)
@@ -191,7 +211,7 @@ def main():
 	target_vec[9] = 1
 	
 	target_outs = gmm.sample(target_vec)
-	invert_features(target_outs, 'fc6')
+	invert_features(target_outs, LAYER)
 
 
 if __name__ == '__main__':

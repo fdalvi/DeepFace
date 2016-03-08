@@ -147,7 +147,7 @@ def extract_activations(layer, data_path, weights_path, solver_path, output_path
 	np.save(output_path + 'outs-%s/blob.dat'%(layer), out)
 
 
-def sample_activations(layer, data_path, weights_path, solver_path, output_path, batch_size=25, num_samples=100): 
+def sample_activations(layer, data_path, weights_path, solver_path, output_path, layer_dims, batch_size=25, num_samples=100): 
 	assert os.path.exists(data_path)
 	assert os.path.exists(weights_path)
 	assert os.path.exists(solver_path)
@@ -175,6 +175,9 @@ def sample_activations(layer, data_path, weights_path, solver_path, output_path,
 	                caffe.TEST)
 
 	transformer = caffe.io.Transformer({'data': net.blobs['data'].data.shape})
+
+	if 'conv' in layer: 
+		layer_dims = (layer_dims[2], layer_dims[0], layer_dims[1])
 	transformer.set_transpose('data', (2,0,1))
 
 	data_blob_shape = net.blobs['data'].data.shape
@@ -183,6 +186,7 @@ def sample_activations(layer, data_path, weights_path, solver_path, output_path,
 
 	##open activation files and sample images 
 	activation_files = []
+	out_dim = tuple([num_samples] + list(layer_dims))
 	for i in xrange(labels.shape[1]): 
 		print 'Label %d of %d'%(i+1, labels.shape[1])
 		##sample activations 
@@ -196,7 +200,7 @@ def sample_activations(layer, data_path, weights_path, solver_path, output_path,
 		with open(output_path + 'outs-%s-%d/image_list_%d.dat'%(layer, num_samples, i+1), 'w+') as fp:
 			cp.dump(selected_examples, fp)
 
-		out = np.zeros((num_samples, 4096))
+		out = np.zeros(out_dim)
 		for k in xrange(len(selected_examples) / batch_size):
 			start_idx = k*batch_size
 			extended_end_idx = (k+1)*batch_size
@@ -209,12 +213,14 @@ def sample_activations(layer, data_path, weights_path, solver_path, output_path,
 
 		np.save(output_path + 'outs-%s-%d/blob-%d.dat'%(layer, num_samples, i+1), out)
 
+
 def deprocess_image(X, mean_image):
 	r = X.copy()
 	r = r.astype(np.uint8)
 	r = r[:,:,::-1]
 	r += mean_image
 	return r
+
 
 def test():
 	##### GET_IMAGE_NAMES test #####
@@ -228,8 +234,6 @@ def test():
 	consolidated_atts = consolidate_labels(atts, pic_list)
 	print consolidated_atts
 	print consolidated_atts.shape
-
-
 
 
 if __name__ == '__main__':
