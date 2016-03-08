@@ -107,15 +107,15 @@ def extract_activations(layer, data_path, weights_path, solver_path, output_path
 	assert os.path.exists(solver_path)
 		
 	caffe.set_mode_gpu()
-	
+
 	images = get_image_names(data_path)
 	num_images = len(images)
 	if num_images == 0:
 		return
 
-	if not os.path.exists(output_path + 'out-%s'%(layer)):
-		os.makedirs(output_path + 'out-%s'%(layer))
-	with open(output_path + 'out-%s/image_list.dat'%(layer), 'w+') as fp:
+	if not os.path.exists(output_path + 'outs-%s'%(layer)):
+		os.makedirs(output_path + 'outs-%s'%(layer))
+	with open(output_path + 'outs-%s/image_list.dat'%(layer), 'w+') as fp:
 		cp.dump(images, fp)
 
 	images_with_path = [data_path + i + '.jpg' for i in images]
@@ -142,19 +142,79 @@ def extract_activations(layer, data_path, weights_path, solver_path, output_path
 		print 'Iteration %d of %d'%(i+1, num_images / batch_size + 1)
 		net.blobs['data'].data[...] = map(lambda x: transformer.preprocess('data',caffe.io.load_image(x)), \
 			images_with_path[i*batch_size:(i+1)*batch_size])
-		# print '[thread=%d]'%i, start_idx, end_idx
 		out[start_idx:end_idx,:] = net.forward(end=layer)[layer][:end_idx-start_idx]
-		# net_forward(net, 
-		# 			transformer, 
-		# 			images_with_path[i*batch_size:(i+1)*batch_size],
-		# 			out_fc7,
-		# 			i, 
-		# 			batch_size, 
-		# 			num_images,
-		# 			'blob_%d'%(i))
+	
+	np.save(output_path + 'outs-%s/blob.dat'%(layer), out)
 
-	np.save(output_path + 'out-%s/blob.dat'%(layer), out)
 
+def sample_activations(layer, data_path, weights_path, solver_path, output_path, batch_size=25, num_samples=100): 
+	assert os.path.exists(data_path)
+	assert os.path.exists(weights_path)
+	assert os.path.exists(solver_path)
+		
+	caffe.set_mode_gpu()
+
+	images = get_image_names(data_path)
+	num_images = len(images)
+	if num_images == 0:
+		return
+
+	if not os.path.exists(output_path + 'outs-%s-%d'%(layer, num_samples)):
+		os.makedirs(output_path + 'outs-%s-%d'%(layer, num_samples))
+	
+	images_with_path = [data_path + i + '.jpg' for i in images]
+	if num_images % batch_size != 0:
+		images_with_path = images_with_path + [images_with_path[-1]]*(batch_size - (num_images % batch_size))
+
+	##load labels 
+	labels = get_attributes('../data/pubfig_attributes.txt', images)
+	labels = labels.as_matrix()
+
+	net = caffe.Net(solver_path,
+	                weights_path,
+	                caffe.TEST)
+
+	transformer = caffe.io.Transformer({'data': net.blobs['data'].data.shape})
+	transformer.set_transpose('data', (2,0,1))
+
+	data_blob_shape = net.blobs['data'].data.shape
+	data_blob_shape = list(data_blob_shape)
+	net.blobs['data'].reshape(batch_size, data_blob_shape[1], data_blob_shape[2], data_blob_shape[3])
+
+	##open activation files and sample images 
+	activation_files = []
+	for i in xrange(labels.shape[1]): 
+		print 'Label %d of %d'%(i+1, labels.shape[1])
+		##sample activations 
+		selected_examples = []
+		selected_examples_idx = np.random.choice(np.where((labels[:,i] > 0.5))[0], size=100)
+
+		for j in xrange(len(selected_examples_idx)):
+			selected_examples.append(images_with_path[selected_examples_idx[j]])
+		# print "length of selected examples, attribute %d"%(i), len(selected_examples)
+
+		with open(output_path + 'outs-%s-%d/image_list_%d.dat'%(layer, num_samples, i+1), 'w+') as fp:
+			cp.dump(selected_examples, fp)
+
+		out = np.zeros((num_samples, 4096))
+		for k in xrange(len(selected_examples) / batch_size):
+			start_idx = k*batch_size
+			extended_end_idx = (k+1)*batch_size
+			end_idx = min(extended_end_idx, num_samples)
+
+			print '\tIteration %d of %d'%(k+1, num_samples / batch_size)
+			net.blobs['data'].data[...] = map(lambda x: transformer.preprocess('data',caffe.io.load_image(x)), \
+				selected_examples[k*batch_size:(k+1)*batch_size])
+			out[start_idx:end_idx,:] = net.forward(end=layer)[layer][:end_idx-start_idx]
+
+		np.save(output_path + 'outs-%s-%d/blob-%d.dat'%(layer, num_samples, i+1), out)
+
+def deprocess_image(X, mean_image):
+	r = X.copy()
+	r = r.astype(np.uint8)
+	r = r[:,:,::-1]
+	r += mean_image
+	return r
 
 def test():
 	##### GET_IMAGE_NAMES test #####
