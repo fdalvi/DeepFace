@@ -7,6 +7,7 @@ import util
 import sklearn
 import sys
 import cPickle as cp
+from PIL import Image
 
 from gmm import GMM
 
@@ -94,11 +95,11 @@ def compute_mean_vars(num_samples):
 	np.save(os.path.join(OUTPUT_PATH, 'means'), means)
 	np.save(os.path.join(OUTPUT_PATH, 'vars'), vars_)
 
-def invert_features(target_feats, layer):
+def invert_features(target_feats, layer, target_image = None):
 	image_output_path = os.path.join(OUTPUT_PATH, 'outputs')
 
 	L2_REG = 1e-6
-	LEARNING_RATE = 1000
+	LEARNING_RATE = 1e-6
 	NUM_ITERATIONS = 200
 	MAX_JITTER = 4
 
@@ -123,7 +124,8 @@ def invert_features(target_feats, layer):
 	mean_image_bgr = mean_image[:,:,::-1].astype(np.float)
 	# print mean_image_bgr.flatten()[0:50]
 
-	X = np.random.normal(0, 10, (224, 224, 3))
+	# net.blobs['data'].data[...] = map(lambda x: transformer.preprocess('data',caffe.io.load_image(x)), images_with_path)
+
 	plt.clf()
 	plt.imshow(mean_image)
 	plt.axis('off')
@@ -138,7 +140,28 @@ def invert_features(target_feats, layer):
 	data_blob_shape = net.blobs['data'].data.shape
 	data_blob_shape = list(data_blob_shape)
 	net.blobs['data'].reshape(1, data_blob_shape[1], data_blob_shape[2], data_blob_shape[3])
-	net.blobs['data'].data[...] = transformer.preprocess('data', X)
+
+	if target_image:
+		X = np.array(Image.open(target_image))
+		X -= mean_image
+		X = X[:,:,::-1]
+		net.blobs['data'].data[...] = transformer.preprocess('data', X)
+
+		print 'Saving target image'
+		plt.clf()
+		plt.imshow(util.deprocess_image(X, mean_image))
+		plt.axis('off')
+		plt.savefig(os.path.join(image_output_path, 'target_image.png'))
+		target_feats_input = target_feats.copy()
+		target_feats = net.forward(end=layer)[layer].copy()
+		# print np.mean(target_feats/target_feats_input)
+
+		# barack - sampled = -1e4
+		# barack - 1000*sampled = 1e4
+	# return	
+
+	X = np.random.normal(0, 10, (224, 224, 3))
+	net.blobs['data'].data[...] = transformer.preprocess('data',X)
 
 	print 'Saving image %d'%(0)
 	plt.clf()
@@ -155,6 +178,7 @@ def invert_features(target_feats, layer):
 		net.blobs['data'].data[...] = transformer.preprocess('data', X)
 		
 		feats = net.forward(end=layer)
+		print np.sum(np.abs(feats[layer] - target_feats))
 		net.blobs[layer].diff[...] = 2 * (feats[layer] - target_feats)
 		dX = net.backward(start=layer)
 		dX = dX['data']
@@ -187,6 +211,79 @@ def invert_features(target_feats, layer):
 
 
 def main(): 
+		# 0: "Male"
+		# 1: "Asian"
+		# 2: "White"
+		# 3: "Black"
+		# 4: "Baby"
+		# 5: "Child"
+		# 6: "Youth"
+		# 7: "Middle Aged"
+		# 8: "Senior"
+		# 9: "Black Hair"
+		# 10: "Blond Hair"
+		# 11: "Brown Hair"
+		# 12: "Bald"
+		# 13: "No Eyewear"
+		# 14: "Eyeglasses"
+		# 15: "Sunglasses"
+		# 16: "Mustache"
+		# 17: "Smiling"
+		# 18: "Frowning"
+		# 19: "Chubby"
+		# 20: "Blurry"
+		# 21: "Harsh Lighting"
+		# 22: "Flash"
+		# 23: "Soft Lighting"
+		# 24: "Outdoor"
+		# 25: "Curly Hair"
+		# 26: "Wavy Hair"
+		# 27: "Straight Hair"
+		# 28: "Receding Hairline"
+		# 29: "Bangs"
+		# 30: "Sideburns"
+		# 31: "Fully Visible Forehead"
+		# 32: "Partially Visible Forehead"
+		# 33: "Obstructed Forehead"
+		# 34: "Bushy Eyebrows"
+		# 35: "Arched Eyebrows"
+		# 36: "Narrow Eyes"
+		# 37: "Eyes Open"
+		# 38: "Big Nose"
+		# 39: "Pointy Nose"
+		# 40: "Big Lips"
+		# 41: "Mouth Closed"
+		# 42: "Mouth Slightly Open"
+		# 43: "Mouth Wide Open"
+		# 44: "Teeth Not Visible"
+		# 45: "No Beard"
+		# 46: "Goatee"
+		# 47: "Round Jaw"
+		# 48: "Double Chin"
+		# 49: "Wearing Hat"
+		# 50: "Oval Face"
+		# 51: "Square Face"
+		# 52: "Round Face"
+		# 53: "Color Photo"
+		# 54: "Posed Photo"
+		# 55: "Attractive Man"
+		# 56: "Attractive Woman"
+		# 57: "Indian"
+		# 58: "Gray Hair"
+		# 59: "Bags Under Eyes"
+		# 60: "Heavy Makeup"
+		# 61: "Rosy Cheeks"
+		# 62: "Shiny Skin"
+		# 63: "Pale Skin"
+		# 64: "5 o' Clock Shadow"
+		# 65: "Strong Nose-Mouth Lines"
+		# 66: "Wearing Lipstick"
+		# 67: "Flushed Face"
+		# 68: "High Cheekbones"
+		# 69: "Brown Eyes"
+		# 70: "Wearing Earrings"
+		# 71: "Wearing Necktie"
+		# 72: "Wearing Necklace"
 	# def extract_activations(layer, data_path, weights_path, solver_path, output_path, batch_size=25):
 	if len(sys.argv) == 1: 
 		mode = 'sample'
@@ -218,13 +315,23 @@ def main():
 	import time 
 	print 'Sampling...'
 	target_vec = np.zeros((73,))
-	target_vec[0] = 1
-	target_vec[57] = 1
-	target_vec[9] = 1
+	target_vec[0] = 1 # Male
+	target_vec[3] = 1 # black
+	target_vec[7] = 1 # middle aged
+	target_vec[9] = 1 # black hair
+	target_vec[13] = 1 # no eyewear
+	target_vec[17] = 1 # smiling
+	target_vec[31] = 1 # visible forehead
+	target_vec[37] = 1 # open eyes
+	target_vec[53] = 1 # color photo
+	target_vec[69] = 1 # brown eyes
 	
 	target_outs = gmm.sample(target_vec)
 	target_outs = target_outs.reshape(LAYER_SIZES[LAYER]).transpose((2,0,1))
-	invert_features(target_outs, LAYER)
+	# invert_features(target_outs, LAYER, '../data/dev_set/images_cropped/Jared_Leto_116.jpg')
+	# invert_features(target_outs, LAYER, '../data/dev_set/images_cropped/Barack_Obama_153.jpg')
+	# invert_features(target_outs, LAYER, '../data/eval_set/images_cropped/Adriana_Lima_239.jpg')
+	invert_features(target_outs/1000.0, LAYER)
 
 
 if __name__ == '__main__':
