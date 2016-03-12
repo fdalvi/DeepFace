@@ -143,7 +143,7 @@ def extract_activations(layer, data_path, weights_path, solver_path, output_path
 		net.blobs['data'].data[...] = map(lambda x: transformer.preprocess('data',caffe.io.load_image(x)), \
 			images_with_path[i*batch_size:(i+1)*batch_size])
 		out[start_idx:end_idx,:] = net.forward(end=layer)[layer][:end_idx-start_idx]
-	
+
 	np.save(output_path + 'outs-%s/blob.dat'%(layer), out)
 
 
@@ -214,6 +214,50 @@ def sample_activations(layer, data_path, weights_path, solver_path, output_path,
 			out[start_idx:end_idx,:] = net.forward(end=layer)[layer][:end_idx-start_idx]
 
 		np.save(os.path.join(extracted_feats_path, 'blob-%d.dat'%(i+1)), out)
+
+def extract_batch_activations(layer, data_path, weights_path, solver_path, layer_dims, images, cache=None): 
+	assert os.path.exists(data_path)
+	assert os.path.exists(weights_path)
+	assert os.path.exists(solver_path)
+		
+	caffe.set_mode_gpu()
+
+	num_images = len(images)
+	batch_size = num_images
+	if num_images == 0:
+		return
+
+	images_with_path = [data_path + i + '.jpg' for i in images]
+
+	##load labels 
+	labels = get_attributes('../data/pubfig_attributes.txt', images)
+	labels = labels.as_matrix()
+
+	if cache:
+		net, transformer = cache
+	else:
+		net = caffe.Net(solver_path,
+	                weights_path,
+	                caffe.TEST)
+
+		transformer = caffe.io.Transformer({'data': net.blobs['data'].data.shape})
+		transformer.set_transpose('data', (2,0,1))
+	
+	if 'conv' in layer: 
+		layer_dims = (layer_dims[2], layer_dims[0], layer_dims[1])
+	
+	data_blob_shape = net.blobs['data'].data.shape
+	data_blob_shape = list(data_blob_shape)
+	net.blobs['data'].reshape(batch_size, data_blob_shape[1], data_blob_shape[2], data_blob_shape[3])
+
+	out_dim = tuple([batch_size] + list(layer_dims))
+	out = np.zeros(out_dim)
+	
+	net.blobs['data'].data[...] = map(lambda x: transformer.preprocess('data',caffe.io.load_image(x)), \
+		images_with_path)
+	out = net.forward(end=layer)[layer]
+
+	return labels, out, (net, transformer)
 
 def deprocess_image(X, mean_image):
 	r = X.copy()

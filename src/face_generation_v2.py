@@ -331,7 +331,7 @@ def main():
 	# invert_features(target_outs, LAYER, '../data/dev_set/images_cropped/Jared_Leto_116.jpg')
 	# invert_features(target_outs, LAYER, '../data/dev_set/images_cropped/Barack_Obama_153.jpg')
 	# invert_features(target_outs, LAYER, '../data/eval_set/images_cropped/Adriana_Lima_239.jpg')
-	invert_features(target_outs/1000.0, LAYER)
+	invert_features(target_outs, LAYER)
 
 
 if __name__ == '__main__':
