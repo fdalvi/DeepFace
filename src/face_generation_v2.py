@@ -37,6 +37,70 @@ LAYER_SIZES = {
 		  "fc7": (4096, )
 		}
 
+def conv_forward_naive(x, w, b, conv_param):
+	"""
+	A naive implementation of the forward pass for a convolutional layer.
+
+	The input consists of N data points, each with C channels, height H and width
+	W. We convolve each input with F different filters, where each filter spans
+	all C channels and has height HH and width HH.
+
+	Input:
+	- x: Input data of shape (N, C, H, W)
+	- w: Filter weights of shape (F, C, HH, WW)
+	- b: Biases, of shape (F,)
+	- conv_param: A dictionary with the following keys:
+		- 'stride': The number of pixels between adjacent receptive fields in the
+			horizontal and vertical directions.
+		- 'pad': The number of pixels that will be used to zero-pad the input.
+
+	Returns a tuple of:
+	- out: Output data, of shape (N, F, H', W') where H' and W' are given by
+		H' = 1 + (H + 2 * pad - HH) / stride
+		W' = 1 + (W + 2 * pad - WW) / stride
+	- cache: (x, w, b, conv_param)
+	"""
+	out = None
+	N, C, H, W = x.shape
+	F, C, HH, WW = w.shape
+	pad = conv_param['pad']
+	stride = conv_param['stride']
+	
+	x_padded = np.pad(x, ((0,0), (0,0), (pad, pad), (pad, pad)), mode='constant')
+	H_out = 1 + (H + 2 * pad - HH) / stride
+	W_out = 1 + (W + 2 * pad - WW) / stride
+	out = np.zeros((N, F, H_out, W_out))
+
+	for i in xrange(H_out):
+		for j in xrange(W_out):
+			start_h = i * stride
+			end_h = start_h + HH
+			start_w = j * stride
+			end_w = start_w + WW
+			
+			out[:, :, i,j] = np.dot(x_padded[:, :, start_h:end_h, start_w:end_w].reshape((N, -1)), w.reshape((F, -1)).T) + b
+	cache = (x, w, b, conv_param)
+	return out, cache
+
+def blur_image(X):
+  """
+  A very gentle image blurring operation, to be used as a regularizer for image
+  generation.
+  
+  Inputs:
+  - X: Image data of shape (N, 3, H, W)
+  
+  Returns:
+  - X_blur: Blurred version of X, of shape (N, 3, H, W)
+  """
+  w_blur = np.zeros((3, 3, 3, 3))
+  b_blur = np.zeros(3)
+  blur_param = {'stride': 1, 'pad': 1}
+  for i in xrange(3):
+    w_blur[i, i] = np.asarray([[1, 2, 1], [2, 188, 2], [1, 2, 1]], dtype=np.float32)
+  w_blur /= 200.0
+  return conv_forward_naive(np.expand_dims(X, 0), w_blur, b_blur, blur_param)[0][0, :, :, :]
+
 def compute_means_vars_all(): 
 	with open(OUTPUT_PATH + 'outs-%s/image_list.dat'%(LAYER), 'rb') as fp:
 		images = cp.load(fp)
@@ -95,12 +159,12 @@ def compute_mean_vars(num_samples):
 	np.save(os.path.join(OUTPUT_PATH, 'means'), means)
 	np.save(os.path.join(OUTPUT_PATH, 'vars'), vars_)
 
-def invert_features(target_feats, layer, target_image = None):
+def invert_features(target_feats, layer, target_image = None, blur_every = 1):
 	image_output_path = os.path.join(OUTPUT_PATH, 'outputs')
 
 	L2_REG = 1e-6
 	LEARNING_RATE = 1e-2
-	NUM_ITERATIONS = 200
+	NUM_ITERATIONS = 500
 	MAX_JITTER = 4
 
 	solver_path = './DeepFaceNetDeploy.prototxt'
@@ -122,6 +186,7 @@ def invert_features(target_feats, layer, target_image = None):
 	# X = X[:,:,::-1]
 
 	mean_image_bgr = mean_image[:,:,::-1].astype(np.float)
+	mean_image_bgr_T = np.transpose(mean_image_bgr, (2, 0, 1))
 	# print mean_image_bgr.flatten()[0:50]
 
 	# net.blobs['data'].data[...] = map(lambda x: transformer.preprocess('data',caffe.io.load_image(x)), images_with_path)
@@ -162,6 +227,7 @@ def invert_features(target_feats, layer, target_image = None):
 
 	X = np.random.normal(0, 255, (224, 224, 3))
 	net.blobs['data'].data[...] = transformer.preprocess('data',X)
+	X = np.transpose(X, (2, 0, 1))
 
 	print 'Saving image %d'%(0)
 	plt.clf()
@@ -175,15 +241,17 @@ def invert_features(target_feats, layer, target_image = None):
 		X = np.roll(np.roll(X, ox, -1), oy, -2)
 
 		print 'Performing iteration %d...'%(t)
+		X = np.transpose(X, (1, 2, 0))
 		net.blobs['data'].data[...] = transformer.preprocess('data', X)
-		
+		X = np.transpose(X, (2, 0 ,1))
+
 		feats = net.forward(end=layer)
-		print np.sum(np.abs(feats[layer] - target_feats))
+		print '\t Difference: %f'%(np.sum(np.abs(feats[layer] - target_feats)))
 		net.blobs[layer].diff[...] = 2 * (feats[layer] - target_feats)
 		dX = net.backward(start=layer)
 		dX = dX['data']
 		dX = dX[0, :, :, :]
-		dX = np.transpose(dX, (1, 2, 0))
+		# dX = np.transpose(dX, (1, 2, 0))
 
 		dX += 2*L2_REG*X
 		# print dX.flatten()[0:50]
@@ -194,13 +262,13 @@ def invert_features(target_feats, layer, target_image = None):
 		
 		# As a regularizer, clip the image
 		# print X.flatten()[0:50]
-		X = np.clip(X, -mean_image_bgr, 255.0 - mean_image_bgr)
+		X = np.clip(X, -mean_image_bgr_T, 255.0 - mean_image_bgr_T)
 		# print X.flatten()[0:50]
 		# print '--------------'
 		
 		# As a regularizer, periodically blur the image
-		# if t % blur_every == 0:
-		# 	X = blur_image(X)
+		if t % blur_every == 0:
+			X = blur_image(X)
 		
 		if t % 10 == 0 or t == NUM_ITERATIONS:
 			print 'Saving image %d'%(t)
@@ -321,20 +389,22 @@ def main():
 	print 'Building GMM...'
 	gmm = GMM(means, vars_)
 	weights_output_path = os.path.join(OUTPUT_PATH, 'weights')
-	gmm.load_weights(os.path.join(weights_output_path, 'weights_iter80.npy'))
+	gmm.load_weights(os.path.join(weights_output_path, 'weights_iter250.npy'))
 
 	print 'Sampling...'
 	target_vec = np.zeros((73,))
-	target_vec[0] = 1 # Male
-	target_vec[3] = 1 # black
-	target_vec[7] = 1 # middle aged
-	target_vec[9] = 1 # black hair
-	target_vec[13] = 1 # no eyewear
-	target_vec[17] = 1 # smiling
-	target_vec[31] = 1 # visible forehead
-	target_vec[37] = 1 # open eyes
-	target_vec[53] = 1 # color photo
-	target_vec[69] = 1 # brown eyes
+	# target_vec[0] = 1 # Male
+	# target_vec[3] = 1 # black
+	# target_vec[7] = 1 # middle aged
+	# target_vec[9] = 1 # black hair
+	# target_vec[13] = 1 # no eyewear
+	# target_vec[17] = 1 # smiling
+	# target_vec[31] = 1 # visible forehead
+	# target_vec[37] = 1 # open eyes
+	# target_vec[53] = 1 # color photo
+	# target_vec[69] = 1 # brown eyes
+	target_vec[11] = 1 # brown hair
+	target_vec[18] = 1 # frowning
 
 	target_outs = gmm.sample(target_vec)
 	target_outs = target_outs.reshape(LAYER_SIZES[LAYER]).transpose((2,0,1))
