@@ -7,7 +7,7 @@ def main():
 	y = []
 	for i in xrange(42):
 		y.append([])
-	for line in open('train_log.txt'):
+	for line in open('train_log_conv5_3.txt'):
 		if "accuracy" in line:
 			matches = re.search("accuracy-(\d+) = (\d+\.\d+)", line)
 			# if matches.group(1) == '1':
