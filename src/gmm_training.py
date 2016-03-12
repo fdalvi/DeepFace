@@ -36,7 +36,9 @@ def main():
 	print 'Building GMM...'
 	g = gmm.GMM(means, vars_)
 
-	g.train(LAYER, DATA_PATH, WEIGHTS_PATH, SOLVER_PATH, LAYER_SIZES[LAYER], num_iterations=100, batch_size=25)
+	g.train(LAYER, DATA_PATH, WEIGHTS_PATH, SOLVER_PATH, LAYER_SIZES[LAYER], num_iterations=100, batch_size=25, save_every=20)
+	# final_weights = g.get_weights() 
+	# np.save('trained_weights', final_weights)
 
 if __name__ == '__main__':
 	main()

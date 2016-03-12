@@ -1,6 +1,7 @@
 import numpy as np
 import util
 import random
+import os
 
 class GMM():
 	def __init__(self, means, vars_):
@@ -13,7 +14,7 @@ class GMM():
 		self.num_components = means.shape[0]
 		self.num_features = means.shape[1]
 		self.weights = np.ones((self.num_components,))
-		self.lr = 5e-4
+		self.lr = 1e-8
 		self.reg = 1e-5
 
 	def sample(self, y):
@@ -30,48 +31,67 @@ class GMM():
 		return sampled_sum
 
 	def step(self, target_feats, true_labels):
-		#target_feats: N x F
-		#true_labels: N x 73 
-		#means: 73 x F
+		# target_feats: N x F
+		# true_labels: N x 73 
+		# means: 73 x F
 		##forward pass 
 
-		# print 'target_feats: ', target_feats.shape
-		# print 'true_labels: ', true_labels.shape
 		N, F = target_feats.shape
-		# print "num_attr, F:", self.means.shape[0], F
-		sampled_feats = np.zeros((N,F))
 		sampled_vec_feats = np.dot(true_labels, (self.weights.reshape(-1,1)*self.means))
+
+		# Non vectorized
+		# sampled_feats = np.zeros((N,F))
 		# for i in xrange(target_feats.shape[0]): 
 		# 	# print true_labels[i,:].shape
 		# 	# print true_labels[i,:].reshape(true_labels[i,:].shape[0], -1).shape
 		# 	print '\tIteration %d/%d'%(i+1, target_feats.shape[0])
 		# 	sampled_feats[i,:] = np.sum(true_labels[i,:].reshape(-1,1)*(self.weights.reshape(-1,1)*self.means), axis=0) #1 x F 
 		# print np.sum(np.abs(sampled_feats - sampled_vec_feats))
-		loss = np.sum((target_feats - sampled_feats)**2)
+
+		# Compute Loss
+		loss = np.sum((target_feats - sampled_vec_feats)**2)
 		loss /= float(N) 
 		loss += 0.5 * self.reg * np.sum(self.weights**2)
 		print "loss:", loss 
 
-		##backward pass + step (need to add regularization)
+		# Backward pass + step 
 		dweights = np.zeros((self.num_components,))
-		# vec_dweights = -2 * np.dot(  (target_feats - sampled_vec_feats), np.dot(true_labels, np.tile(self.means, (N,1)))
-		# vec_dweights = np.sum(true_labels * (-2 * np.dot((target_feats - sampled_vec_feats), self.means.T)), axis=0)
-		# updated_weights = self.weights - self.lr * vec_dweights 
 		for i in xrange(self.num_components): 
 			# print '\t iteration %d/%d'%(i, self.num_components)
-			dweights[i] = -2 * np.sum((target_feats - sampled_feats) * true_labels[:,i].reshape(-1,1).dot(self.means[i,:].reshape(1,-1)))
+			dweights[i] = -2 * np.sum((target_feats - sampled_vec_feats) * true_labels[:,i].reshape(-1,1).dot(self.means[i,:].reshape(1,-1)))
 			dweights[i] /= float(N)
 			dweights[i] += self.reg * self.weights[i]
 			self.weights[i] -= self.lr * dweights[i]
-		# print np.sum(np.abs(dweights - vec_dweights))
-		# print np.sum(np.abs(updated_weights - self.weights))
+
+		return loss, dweights
+
+	def gmm_loss(self, target_feats, true_labels, weights): 
+		N, F = target_feats.shape
+		sampled_vec_feats = np.dot(true_labels, (weights.reshape(-1,1)*self.means))
+
+		# Compute Loss
+		loss = np.sum((target_feats - sampled_vec_feats)**2)
+		loss /= float(N) 
+		loss += 0.5 * self.reg * np.sum(weights**2)
 
 		return loss
 
-	def train(self, layer, data_path, weights_path, solver_path, layer_dims, num_iterations=100, batch_size=25): 
+	def get_weights(self): 
+		return self.weights
+
+	def load_weights(self, weights_path): 
+		self.weights = np.load(weights_path)
+
+	def train(self, layer, data_path, weights_path, solver_path, output_path, layer_dims, num_iterations=100, batch_size=25, save_every=20): 
+		local_output_path = os.path.join(output_path, 'weights')
 		cache = None
 		images = util.get_image_names(data_path)
+		check_gradient = False
 
+		if not os.path.exists(local_output_path):
+			os.makedirs(local_output_path)
+
+		loss_history = []
 		for i in xrange(num_iterations): 
 			print 'Train iteration %d/%d'%(i+1, num_iterations)
 			# Sample images
@@ -86,7 +106,20 @@ class GMM():
 			# Perform BGD step
 			print '\tStepping...'
 			print '\t',
-			loss = self.step(feats, labels)
+			weights = self.weights.copy()
+			loss, dweights = self.step(feats, labels)
+			loss_history.append(loss)
+
+			#check gradient
+			# f = lambda w: svm_loss_naive(w, X_dev, y_dev, 0.0)[0]
+			if check_gradient: 
+				f = lambda w: self.gmm_loss(feats, labels, w)
+				util.grad_check_sparse(f, weights, dweights)
+
+			if (i+1) % save_every == 0 or i == num_iterations-1: 
+				print 'Saving weights...'
+				np.save(os.path.join(local_output_path, 'weights_iter%d'%i), self.weights)
+				np.save(os.path.join(local_output_path, 'loss_history', np.array(loss_history)))
 
 
 def test():

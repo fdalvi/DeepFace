@@ -14,7 +14,7 @@ from gmm import GMM
 DATA_PATH = '../data/eval_set/images_cropped/'
 WEIGHTS_PATH = './snapshots/_iter_42000.caffemodel'
 SOLVER_PATH = './DeepFaceNetDeploy.prototxt'
-LAYER = 'conv3_1'
+LAYER = 'conv5_1'
 # NUM_ATTRIBUTES = 73
 NUM_SAMPLES = 100
 OUTPUT_PATH = './trial_%s_%d/'%(LAYER, NUM_SAMPLES)
@@ -99,7 +99,7 @@ def invert_features(target_feats, layer, target_image = None):
 	image_output_path = os.path.join(OUTPUT_PATH, 'outputs')
 
 	L2_REG = 1e-6
-	LEARNING_RATE = 1e-6
+	LEARNING_RATE = 1e-2
 	NUM_ITERATIONS = 200
 	MAX_JITTER = 4
 
@@ -160,7 +160,7 @@ def invert_features(target_feats, layer, target_image = None):
 		# barack - 1000*sampled = 1e4
 	# return	
 
-	X = np.random.normal(0, 10, (224, 224, 3))
+	X = np.random.normal(0, 255, (224, 224, 3))
 	net.blobs['data'].data[...] = transformer.preprocess('data',X)
 
 	print 'Saving image %d'%(0)
@@ -302,17 +302,27 @@ def main():
 		print 'Computing mean/vars of extracted feats...' 
 		compute_mean_vars(num_samples=NUM_SAMPLES)
 		return
+	if mode == 'train':
+		print 'Loading means and vars...'
 
+		means = np.load(os.path.join(OUTPUT_PATH, 'means.npy'))
+		vars_ = np.load(os.path.join(OUTPUT_PATH, 'vars.npy'))
+
+		print 'Building GMM...'
+		g = GMM(means, vars_)
+
+		g.train(LAYER, DATA_PATH, WEIGHTS_PATH, SOLVER_PATH, OUTPUT_PATH, LAYER_SIZES[LAYER], num_iterations=1000, batch_size=25, save_every=50)
+		return
 
 	print 'Loading means and vars...'
-
 	means = np.load(os.path.join(OUTPUT_PATH, 'means.npy'))
 	vars_ = np.load(os.path.join(OUTPUT_PATH, 'vars.npy'))
 
 	print 'Building GMM...'
 	gmm = GMM(means, vars_)
+	weights_output_path = os.path.join(OUTPUT_PATH, 'weights')
+	gmm.load_weights(os.path.join(weights_output_path, 'weights_iter80.npy'))
 
-	import time 
 	print 'Sampling...'
 	target_vec = np.zeros((73,))
 	target_vec[0] = 1 # Male
@@ -325,7 +335,7 @@ def main():
 	target_vec[37] = 1 # open eyes
 	target_vec[53] = 1 # color photo
 	target_vec[69] = 1 # brown eyes
-	
+
 	target_outs = gmm.sample(target_vec)
 	target_outs = target_outs.reshape(LAYER_SIZES[LAYER]).transpose((2,0,1))
 	# invert_features(target_outs, LAYER, '../data/dev_set/images_cropped/Jared_Leto_116.jpg')

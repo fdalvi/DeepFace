@@ -5,6 +5,8 @@ import random
 import cPickle as cp
 import caffe
 
+from random import randrange
+
 CONSOLIDATED_LABELS = [[0],[1, 2, 3, 57],[4, 5, 6, 7, 8],[9, 10, 11, 58],
 						 [12, 28],[13, 14, 15],[16],[17, 18],[19],
 						 [20],[21, 22, 23],[24],[25, 26, 27],[29],
@@ -99,6 +101,28 @@ def consolidate_labels(original_labels, image_names = None, debug=False):
 				if debug: print '\t', LABELS[label_list[consolidated_matrix[i,label_idx]-1]]
 
 	return consolidated_matrix
+
+
+def grad_check_sparse(f, x, analytic_grad, num_checks=10, h=1e-5):
+  """
+  sample a few random elements and only return numerical
+  in this dimensions.
+  """
+
+  for i in xrange(num_checks):
+    ix = tuple([randrange(m) for m in x.shape])
+
+    oldval = x[ix]
+    x[ix] = oldval + h # increment by h
+    fxph = f(x) # evaluate f(x + h)
+    x[ix] = oldval - h # increment by h
+    fxmh = f(x) # evaluate f(x - h)
+    x[ix] = oldval # reset
+
+    grad_numerical = (fxph - fxmh) / (2 * h)
+    grad_analytic = analytic_grad[ix]
+    rel_error = abs(grad_numerical - grad_analytic) / (abs(grad_numerical) + abs(grad_analytic))
+    print 'numerical: %f analytic: %f, relative error: %e' % (grad_numerical, grad_analytic, rel_error)
 
 
 def extract_activations(layer, data_path, weights_path, solver_path, output_path, batch_size=25): 
