@@ -12,6 +12,7 @@ from PIL import Image
 from gmm import GMM
 
 DATA_PATH = '../data/eval_set/images_cropped/'
+DATA_PATH_2 = '../data/dev_set/images_cropped/'
 WEIGHTS_PATH = './snapshots_conv5/_iter_42000.caffemodel'
 SOLVER_PATH = './DeepFaceNetDeploy.prototxt'
 LAYER = 'conv3_1'
@@ -159,9 +160,8 @@ def compute_mean_vars(num_samples):
 	np.save(os.path.join(OUTPUT_PATH, 'means'), means)
 	np.save(os.path.join(OUTPUT_PATH, 'vars'), vars_)
 
-def invert_features(target_feats, layer, target_image = None, num_iterations = 200, blur_every = 1):
+def invert_features(target_feats, layer, image_output_path, target_image = None, num_iterations = 200, blur_every = 1):
 	image_output_path = os.path.join(OUTPUT_PATH, 'outputs')
-
 	L2_REG = 1e-6
 	# LEARNING_RATE = 1e-2
 	LEARNING_RATE = 1e-6
@@ -247,9 +247,11 @@ def invert_features(target_feats, layer, target_image = None, num_iterations = 2
 		X = np.transpose(X, (2, 0 ,1))
 
 		feats = net.forward(end=layer)
+
 		curr_diff = np.sum(np.abs(feats[layer] - target_feats))
 		print '\t Difference: %f (Δ = %.2f)'%(curr_diff, prev_diff - curr_diff)
 		prev_diff = curr_diff
+
 		net.blobs[layer].diff[...] = 2 * (feats[layer] - target_feats)
 		dX = net.backward(start=layer)
 		dX = dX['data']
@@ -396,29 +398,87 @@ def main():
 
 	print 'Sampling...'
 	target_vec = np.zeros((73,))
-	# target_vec[0] = 1 # Male
-	# target_vec[3] = 1 # black
-	# target_vec[7] = 1 # middle aged
-	# target_vec[9] = 1 # black hair
-	# target_vec[13] = 1 # no eyewear
-	# target_vec[17] = 1 # smiling
-	# target_vec[31] = 1 # visible forehead
-	# target_vec[37] = 1 # open eyes
-	# target_vec[53] = 1 # color photo
-	# target_vec[69] = 1 # brown eyes
 	target_vec[0] = 1 # Male
-	target_vec[11] = 1 # brown hair
-	target_vec[18] = 1 # frowning
-	target_vec[46] = 1 # goatee
+	target_vec[3] = 1 # black
+	target_vec[7] = 1 # middle aged
+	target_vec[9] = 1 # black hair
+	target_vec[13] = 1 # no eyewear
+	target_vec[17] = 1 # smiling
+	target_vec[31] = 1 # visible forehead
+	target_vec[37] = 1 # open eyes
+	target_vec[53] = 1 # color photo
+	target_vec[69] = 1 # brown eyes
+	
+	# target_vec[0] = 1 # Male
+	#target_vec[11] = 1 # brown hair
+	#target_vec[18] = 1 # frowning
+	#target_vec[46] = 1 # goatee
+	# all_images = [f[:-4] for f in os.listdir(DATA_PATH_2)]
+	# all_images.sort()
+	# # rand_smpl = [ mylist[i] for i in sorted(random.sample(xrange(len(mylist)), 4)) ]
+	# images = [all_images[i] for i in sorted(random.sample(xrange(len(all_images)), 20))]
+	# print images
+
+	# images = ['Barack_Obama_441', 'Clive_Owen_169', 'Cristiano_Ronaldo_82', 'Cristiano_Ronaldo_105', 'David_Duchovny_236', 'Donald_Faison_43', 
+	# 'Donald_Faison_74', 'Jared_Leto_23', 'Julia_Roberts_21', 'Mickey_Rourke_104', 'Miley_Cyrus_1528', 'Miley_Cyrus_1680', 'Nicole_Richie_267', 
+	# 'Ryan_Seacrest_16', 'Seth_Rogen_60', 'Shakira_398', 'Stephen_Colbert_174', 'Zac_Efron_150']
+	# atts = util.get_attributes('../data/pubfig_attributes.txt', images)
+	# atts = atts.as_matrix() 
+
+	# for i, img in enumerate(images): 
+	# 	target_vec = np.zeros((73,))
+	# 	print atts[i]
+	# 	target_vec[atts[i].astype('int')] = 1
+	# 	target_outs = gmm.sample(target_vec)
+	# 	target_outs = target_outs.reshape(LAYER_SIZES[LAYER]).transpose((2,0,1))
+	# 	# invert_features(target_outs, LAYER, '../data/dev_set/images_cropped/Jared_Leto_116.jpg')
+	# 	# invert_features(target_outs, LAYER, '../data/dev_set/images_cropped/Barack_Obama_153.jpg')
+	# 	# invert_features(target_outs, LAYER, '../data/eval_set/images_cropped/Adriana_Lima_239.jpg')
+	# 	# invert_features(target_outs, LAYER, './tariq.jpg')
+	# 	image_output_path = os.path.join(OUTPUT_PATH, 'outputs-%s'%img)
+	# 	invert_features(target_outs, LAYER, image_output_path, num_iterations=300)
+
+	# target_vec[2] = 1
+	# target_vec[6] = 1
+	# target_vec[11] = 1
+	# target_vec[13] = 1
+	# target_vec[17] = 1
+	# target_vec[22] = 1
+	# target_vec[26] = 1
+	# target_vec[31] = 1
+	# target_vec[35] = 1
+	# target_vec[36] = 1
+	# target_vec[37] = 1
+	# target_vec[39] = 1
+	# target_vec[42] = 1
+	# target_vec[45] = 1
+	# target_vec[47] = 1
+	# target_vec[50] = 1
+	# target_vec[53] = 1
+	# target_vec[54] = 1
+	# target_vec[55] = 1
+	# target_vec[56] = 1
+	# target_vec[60] = 1
+	# target_vec[61] = 1
+	# target_vec[62] = 1
+	# target_vec[63] = 1
+	# target_vec[65] = 1
+	# target_vec[66] = 1
+	# target_vec[67] = 1
+	# target_vec[68] = 1
+	# target_vec[69] = 1
+	# target_vec[70] = 1
+	# target_vec[72] = 1
 
 	target_outs = gmm.sample(target_vec)
 	target_outs = target_outs.reshape(LAYER_SIZES[LAYER]).transpose((2,0,1))
 	# invert_features(target_outs, LAYER, '../data/dev_set/images_cropped/Jared_Leto_116.jpg')
-	# invert_features(target_outs, LAYER, '../data/dev_set/images_cropped/Barack_Obama_153.jpg')
+	image_output_path = os.path.join(OUTPUT_PATH, 'outputs-barack-color')
+	invert_features(target_outs, LAYER, image_output_path, '../data/dev_set/images_cropped/Barack_Obama_153.jpg')
 	# invert_features(target_outs, LAYER, '../data/eval_set/images_cropped/Adriana_Lima_239.jpg')
 	# invert_features(target_outs, LAYER, './tariq.jpg')
-	invert_features(target_outs, LAYER, num_iterations=4000)
 
+	invert_features(target_outs, LAYER, num_iterations=4000)
 
 if __name__ == '__main__':
 	main()
