@@ -246,9 +246,11 @@ def invert_features(target_feats, layer, image_output_path, target_image = None,
 		X = np.transpose(X, (2, 0 ,1))
 
 		feats = net.forward(end=layer)
+
 		curr_diff = np.sum(np.abs(feats[layer] - target_feats))
 		print '\t Difference: %f (Δ = %.2f)'%(curr_diff, prev_diff - curr_diff)
 		prev_diff = curr_diff
+
 		net.blobs[layer].diff[...] = 2 * (feats[layer] - target_feats)
 		dX = net.backward(start=layer)
 		dX = dX['data']
@@ -391,6 +393,7 @@ def main():
 	print 'Building GMM...'
 	gmm = GMM(means, vars_)
 	weights_output_path = os.path.join(OUTPUT_PATH, 'weights')
+
 	gmm.load_weights(os.path.join(weights_output_path, 'weights_iter150.npy'))
 
 	print 'Sampling...'

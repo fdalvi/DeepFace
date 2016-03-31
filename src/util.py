@@ -305,6 +305,7 @@ def extract_batch_activations(layer, data_path, weights_path, solver_path, layer
 
 def deprocess_image(X, mean_image):
 	r = X.copy()
+	r = np.transpose(r, (1,2,0))
 	r = r.astype(np.uint8)
 	r = r[:,:,::-1]
 	r += mean_image

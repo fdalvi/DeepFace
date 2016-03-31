@@ -118,8 +118,8 @@ class GMM():
 
 			if (i+1) % save_every == 0 or i == num_iterations-1: 
 				print 'Saving weights...'
-				np.save(os.path.join(local_output_path, 'weights_iter%d'%i), self.weights)
-				np.save(os.path.join(local_output_path, 'loss_history', np.array(loss_history)))
+				np.save(os.path.join(local_output_path, 'weights_iter%d'%(i+1)), self.weights)
+				np.save(os.path.join(local_output_path, 'loss_history'), np.array(loss_history))
 
 
 def test():
