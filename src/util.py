@@ -3,7 +3,7 @@ import pandas as pd
 import os
 import random
 import cPickle as cp
-import caffe
+# import caffe
 
 from random import randrange
 
@@ -49,6 +49,26 @@ def get_attributes(filename, pic_list):
 	good_atts[good_atts <= 0] = 0
 
 	return good_atts
+
+##temp get_attributes
+def get_attributes_temp(filename, pic_list):
+	attributes = pd.read_csv(filename, header=1, sep='\t', index_col=(0,1))
+	index_list = []
+	for im_name in pic_list:
+		name_and_num = im_name.split('_')
+		num = int(name_and_num[-1])
+		name = ' '.join(name_and_num[:-1])
+		index_list.append((name, num))
+
+	good_atts = attributes.loc[index_list]
+	cols_for_matrix = np.arange(start=2, stop=good_atts.shape[1])
+	good_atts.as_matrix(cols_for_matrix)
+
+	good_atts[good_atts > 0] = 1
+	good_atts[good_atts <= 0] = 0
+
+	return good_atts
+
 
 '''
 Function to get all the image names in a given directory.
@@ -293,16 +313,21 @@ def deprocess_image(X, mean_image):
 
 def test():
 	##### GET_IMAGE_NAMES test #####
-	print get_image_names('../data/dev_set/images_cropped/')
+	# print get_image_names('../data/dev_set/images_cropped/')
 
-	##### get_attributes test #####
-	print get_attributes('../data/pubfig_attributes.txt', ['Aaron_Eckhart_1', 'Aaron_Eckhart_4'])
+	# ##### get_attributes test #####
+	# print get_attributes('../data/pubfig_attributes.txt', ['Aaron_Eckhart_1', 'Aaron_Eckhart_4'])
 
-	pic_list = get_image_names('../data/dev_set/images_cropped/')
-	atts = get_attributes('../data/pubfig_attributes.txt', pic_list)
-	consolidated_atts = consolidate_labels(atts, pic_list)
-	print consolidated_atts
-	print consolidated_atts.shape
+	# pic_list = get_image_names('../data/dev_set/images_cropped/')
+	# atts = get_attributes('../data/pubfig_attributes.txt', pic_list)
+	# consolidated_atts = consolidate_labels(atts, pic_list)
+	# print consolidated_atts
+	# print consolidated_atts.shape
+	images = ['Ali_Landry_14']
+	atts = get_attributes_temp('../data/pubfig_attributes.txt', images)
+	print atts.as_matrix()
+	print np.where(atts)
+
 
 
 if __name__ == '__main__':
