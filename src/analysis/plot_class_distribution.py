@@ -4,8 +4,6 @@ import os
 import util
 
 DATA_PATH = '../data/eval_set/images_cropped/'
-WEIGHTS_PATH = './snapshots/_iter_42000.caffemodel'
-SOLVER_PATH = './DeepFaceNetDeploy.prototxt'
 LABELS = ["Male",
 			"Asian",
 			"White",
@@ -83,8 +81,6 @@ LABELS = ["Male",
 
 def main():
 	assert os.path.exists(DATA_PATH)
-	assert os.path.exists(WEIGHTS_PATH)
-	assert os.path.exists(SOLVER_PATH)
 
 	images = util.get_image_names(DATA_PATH)
 	num_images = len(images)
@@ -103,6 +99,8 @@ def main():
 		print 'Label %d of %d'%(i+1, labels.shape[1])
 		x.append(i)
 		y.append(np.sum((labels[:,i] > 0.5)))
+		print LABELS[i], y[i]
+	return
 
 	print len(x), len(y)
 	plt.bar(x, y, color="blue")
