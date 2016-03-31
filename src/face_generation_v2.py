@@ -12,9 +12,9 @@ from PIL import Image
 from gmm import GMM
 
 DATA_PATH = '../data/eval_set/images_cropped/'
-WEIGHTS_PATH = './snapshots/_iter_42000.caffemodel'
+WEIGHTS_PATH = './snapshots_conv5/_iter_42000.caffemodel'
 SOLVER_PATH = './DeepFaceNetDeploy.prototxt'
-LAYER = 'conv5_1'
+LAYER = 'conv3_1'
 # NUM_ATTRIBUTES = 73
 NUM_SAMPLES = 100
 OUTPUT_PATH = './trial_%s_%d/'%(LAYER, NUM_SAMPLES)
@@ -159,12 +159,12 @@ def compute_mean_vars(num_samples):
 	np.save(os.path.join(OUTPUT_PATH, 'means'), means)
 	np.save(os.path.join(OUTPUT_PATH, 'vars'), vars_)
 
-def invert_features(target_feats, layer, target_image = None, blur_every = 1):
+def invert_features(target_feats, layer, target_image = None, num_iterations = 200, blur_every = 1):
 	image_output_path = os.path.join(OUTPUT_PATH, 'outputs')
 
 	L2_REG = 1e-6
-	LEARNING_RATE = 1e-2
-	NUM_ITERATIONS = 500
+	# LEARNING_RATE = 1e-2
+	LEARNING_RATE = 1e-6
 	MAX_JITTER = 4
 
 	solver_path = './DeepFaceNetDeploy.prototxt'
@@ -211,7 +211,7 @@ def invert_features(target_feats, layer, target_image = None, blur_every = 1):
 		X -= mean_image
 		X = X[:,:,::-1]
 		net.blobs['data'].data[...] = transformer.preprocess('data', X)
-
+		X = np.transpose(X, (2,0,1))
 		print 'Saving target image'
 		plt.clf()
 		plt.imshow(util.deprocess_image(X, mean_image))
@@ -225,7 +225,7 @@ def invert_features(target_feats, layer, target_image = None, blur_every = 1):
 		# barack - 1000*sampled = 1e4
 	# return	
 
-	X = np.random.normal(0, 255, (224, 224, 3))
+	X = np.random.normal(0, 10, (224, 224, 3))
 	net.blobs['data'].data[...] = transformer.preprocess('data',X)
 	X = np.transpose(X, (2, 0, 1))
 
@@ -235,7 +235,8 @@ def invert_features(target_feats, layer, target_image = None, blur_every = 1):
 	plt.axis('off')
 	plt.savefig(os.path.join(image_output_path, 'image-%d.png'%(0)))
 
-	for t in xrange(1, NUM_ITERATIONS+1):
+	prev_diff = 0.0
+	for t in xrange(1, num_iterations+1):
 		# As a regularizer, add random jitter to the image
 		ox, oy = np.random.randint(-MAX_JITTER, MAX_JITTER+1, 2)
 		X = np.roll(np.roll(X, ox, -1), oy, -2)
@@ -246,7 +247,9 @@ def invert_features(target_feats, layer, target_image = None, blur_every = 1):
 		X = np.transpose(X, (2, 0 ,1))
 
 		feats = net.forward(end=layer)
-		print '\t Difference: %f'%(np.sum(np.abs(feats[layer] - target_feats)))
+		curr_diff = np.sum(np.abs(feats[layer] - target_feats))
+		print '\t Difference: %f (Δ = %.2f)'%(curr_diff, prev_diff - curr_diff)
+		prev_diff = curr_diff
 		net.blobs[layer].diff[...] = 2 * (feats[layer] - target_feats)
 		dX = net.backward(start=layer)
 		dX = dX['data']
@@ -270,7 +273,7 @@ def invert_features(target_feats, layer, target_image = None, blur_every = 1):
 		if t % blur_every == 0:
 			X = blur_image(X)
 		
-		if t % 10 == 0 or t == NUM_ITERATIONS:
+		if t % 10 == 0 or t == num_iterations:
 			print 'Saving image %d'%(t)
 			plt.clf()
 			plt.imshow(util.deprocess_image(X, mean_image))
@@ -379,7 +382,7 @@ def main():
 		print 'Building GMM...'
 		g = GMM(means, vars_)
 
-		g.train(LAYER, DATA_PATH, WEIGHTS_PATH, SOLVER_PATH, OUTPUT_PATH, LAYER_SIZES[LAYER], num_iterations=1000, batch_size=25, save_every=50)
+		g.train(LAYER, DATA_PATH, WEIGHTS_PATH, SOLVER_PATH, OUTPUT_PATH, LAYER_SIZES[LAYER], num_iterations=2000, batch_size=25, save_every=50)
 		return
 
 	print 'Loading means and vars...'
@@ -389,7 +392,7 @@ def main():
 	print 'Building GMM...'
 	gmm = GMM(means, vars_)
 	weights_output_path = os.path.join(OUTPUT_PATH, 'weights')
-	gmm.load_weights(os.path.join(weights_output_path, 'weights_iter250.npy'))
+	gmm.load_weights(os.path.join(weights_output_path, 'weights_iter450.npy'))
 
 	print 'Sampling...'
 	target_vec = np.zeros((73,))
@@ -403,15 +406,18 @@ def main():
 	# target_vec[37] = 1 # open eyes
 	# target_vec[53] = 1 # color photo
 	# target_vec[69] = 1 # brown eyes
+	target_vec[0] = 1 # Male
 	target_vec[11] = 1 # brown hair
 	target_vec[18] = 1 # frowning
+	target_vec[46] = 1 # goatee
 
 	target_outs = gmm.sample(target_vec)
 	target_outs = target_outs.reshape(LAYER_SIZES[LAYER]).transpose((2,0,1))
 	# invert_features(target_outs, LAYER, '../data/dev_set/images_cropped/Jared_Leto_116.jpg')
 	# invert_features(target_outs, LAYER, '../data/dev_set/images_cropped/Barack_Obama_153.jpg')
 	# invert_features(target_outs, LAYER, '../data/eval_set/images_cropped/Adriana_Lima_239.jpg')
-	invert_features(target_outs, LAYER)
+	# invert_features(target_outs, LAYER, './tariq.jpg')
+	invert_features(target_outs, LAYER, num_iterations=4000)
 
 
 if __name__ == '__main__':

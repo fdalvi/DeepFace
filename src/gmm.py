@@ -14,7 +14,7 @@ class GMM():
 		self.num_components = means.shape[0]
 		self.num_features = means.shape[1]
 		self.weights = np.ones((self.num_components,))
-		self.lr = 1e-8
+		self.lr = 1e-11
 		self.reg = 1e-5
 
 	def sample(self, y):
@@ -30,14 +30,24 @@ class GMM():
 
 		return sampled_sum
 
-	def step(self, target_feats, true_labels):
+	def step(self, target_feats, true_labels, custom_weights=None, loss_only=False, verbose=True):
+		if custom_weights is not None:
+			weights = custom_weights
+		else:
+			weights = self.weights
 		# target_feats: N x F
 		# true_labels: N x 73 
 		# means: 73 x F
 		##forward pass 
-
+		if verbose: print 'Sampling...'
+		# mask = np.eye(73)
+		# samples = np.array([self.sample(mask[:, i]) for i in xrange(73)])
+		samples = self.means
+		# print samples.shape
+		if verbose: print '\tForward pass...'
 		N, F = target_feats.shape
-		sampled_vec_feats = np.dot(true_labels, (self.weights.reshape(-1,1)*self.means))
+		# normalization_factor = 1.0/np.sum(true_labels, axis=1).reshape(-1, 1)
+		sampled_vec_feats = np.dot(true_labels, (weights.reshape(-1,1)*samples)) #* normalization_factor
 
 		# Non vectorized
 		# sampled_feats = np.zeros((N,F))
@@ -45,36 +55,31 @@ class GMM():
 		# 	# print true_labels[i,:].shape
 		# 	# print true_labels[i,:].reshape(true_labels[i,:].shape[0], -1).shape
 		# 	print '\tIteration %d/%d'%(i+1, target_feats.shape[0])
-		# 	sampled_feats[i,:] = np.sum(true_labels[i,:].reshape(-1,1)*(self.weights.reshape(-1,1)*self.means), axis=0) #1 x F 
+		# 	sampled_feats[i,:] = np.sum(true_labels[i,:].reshape(-1,1)*(weights.reshape(-1,1)*samples), axis=0) #1 x F 
 		# print np.sum(np.abs(sampled_feats - sampled_vec_feats))
 
 		# Compute Loss
 		loss = np.sum((target_feats - sampled_vec_feats)**2)
 		loss /= float(N) 
-		loss += 0.5 * self.reg * np.sum(self.weights**2)
-		print "loss:", loss 
+		loss += 0.5 * self.reg * np.sum(weights**2)
+		if verbose: print "\tloss:", loss 
 
+		if loss_only:
+			return loss
 		# Backward pass + step 
 		dweights = np.zeros((self.num_components,))
 		for i in xrange(self.num_components): 
 			# print '\t iteration %d/%d'%(i, self.num_components)
-			dweights[i] = -2 * np.sum((target_feats - sampled_vec_feats) * true_labels[:,i].reshape(-1,1).dot(self.means[i,:].reshape(1,-1)))
+			# dweights[i] = -2 * np.sum((target_feats - sampled_vec_feats) * normalization_factor * true_labels[:,i].reshape(-1,1).dot(samples[i,:].reshape(1,-1)))
+			dweights[i] = -2 * np.sum((target_feats - sampled_vec_feats) * true_labels[:,i].reshape(-1,1).dot(samples[i,:].reshape(1,-1)))
 			dweights[i] /= float(N)
-			dweights[i] += self.reg * self.weights[i]
+			dweights[i] += self.reg * weights[i]
 			self.weights[i] -= self.lr * dweights[i]
 
 		return loss, dweights
 
 	def gmm_loss(self, target_feats, true_labels, weights): 
-		N, F = target_feats.shape
-		sampled_vec_feats = np.dot(true_labels, (weights.reshape(-1,1)*self.means))
-
-		# Compute Loss
-		loss = np.sum((target_feats - sampled_vec_feats)**2)
-		loss /= float(N) 
-		loss += 0.5 * self.reg * np.sum(weights**2)
-
-		return loss
+		return self.step(target_feats, true_labels, weights, loss_only=True, verbose=False)
 
 	def get_weights(self): 
 		return self.weights
